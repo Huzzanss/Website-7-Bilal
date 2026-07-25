@@ -1,8 +1,8 @@
 /* =========================================================
-   Admin Panel Script — Fixed Key Session Storage
+   Admin Panel Script — Full Compatible with app.js
    ========================================================= */
 
-// 1. CEK LOGIN SESSION (Menggunakan key 'adminAuth' sesuai Application Tab)
+// 1. CEK AUTHENTICATION (Storage Session Check)
 function checkAuth() {
   const isLoggedIn = sessionStorage.getItem("adminAuth") || localStorage.getItem("adminAuth");
   if (!isLoggedIn || isLoggedIn !== "true") {
@@ -13,12 +13,18 @@ function checkAuth() {
   return true;
 }
 
-// Jalankan pengecekan Auth
-if (!checkAuth()) {
-  throw new Error("Akses ditolak. Mengalihkan ke halaman utama...");
+// Jalankan Pengecekan
+checkAuth();
+
+// 2. INITIALIZE FIREBASE DATABASE (Wajib agar tidak Error)
+let db;
+try {
+  db = firebase.database();
+} catch (e) {
+  console.error("Firebase Database gagal diinisialisasi:", e);
 }
 
-// 2. HELPER UTILS
+// 3. HELPER UTILS (Persis seperti app.js)
 function escapeHTML(str = ""){
   return String(str).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -42,40 +48,41 @@ function logoutAdmin(message) {
   window.location.href = "../../index.html";
 }
 
-// Auto Logout 15 Menit Inaktivitas
-const INACTIVE_TIMEOUT = 15 * 60 * 1000;
-let inactivityTimer;
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(() => {
-    logoutAdmin("Sesi telah berakhir karena tidak ada aktivitas selama 15 menit.");
-  }, INACTIVE_TIMEOUT);
-}
-
-['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
-  window.addEventListener(evt, resetInactivityTimer);
-});
-resetInactivityTimer();
-
-// 3. FIREBASE INSTANCE & REALTIME READ
-const db = firebase.database();
-
+// 4. REALTIME DATABASE LISTENERS
 let announcements = [];
 let tasks = [];
 let gallery = [];
 
-/* REALTIME READ PENGUMUMAN */
-db.ref("announcements").on("value", (snap) => {
-  const val = snap.val() || {};
-  announcements = Object.entries(val)
-    .map(([id, data]) => ({ id, ...data }))
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  renderAnnouncements();
-}, (error) => {
-  console.error("Firebase Error (Announcements):", error);
-});
+if (db) {
+  /* REALTIME READ PENGUMUMAN */
+  db.ref("announcements").on("value", (snap) => {
+    const val = snap.val() || {};
+    announcements = Object.entries(val)
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    renderAnnouncements();
+  });
 
+  /* REALTIME READ TUGAS */
+  db.ref("tasks").on("value", (snap) => {
+    const val = snap.val() || {};
+    tasks = Object.entries(val)
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
+    renderTasks();
+  });
+
+  /* REALTIME READ GALERI */
+  db.ref("gallery").on("value", (snap) => {
+    const val = snap.val() || {};
+    gallery = Object.entries(val)
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    renderGallery();
+  });
+}
+
+// 5. RENDER FUNCTIONS
 function renderAnnouncements(){
   const list = document.getElementById("adminAnnouncementList");
   if (!list) return;
@@ -94,17 +101,6 @@ function renderAnnouncements(){
     </div>
   `).join("");
 }
-
-/* REALTIME READ TUGAS */
-db.ref("tasks").on("value", (snap) => {
-  const val = snap.val() || {};
-  tasks = Object.entries(val)
-    .map(([id, data]) => ({ id, ...data }))
-    .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
-  renderTasks();
-}, (error) => {
-  console.error("Firebase Error (Tasks):", error);
-});
 
 function renderTasks(){
   const list = document.getElementById("adminTaskList");
@@ -134,17 +130,6 @@ function renderTasks(){
   `).join("");
 }
 
-/* REALTIME READ GALERI */
-db.ref("gallery").on("value", (snap) => {
-  const val = snap.val() || {};
-  gallery = Object.entries(val)
-    .map(([id, data]) => ({ id, ...data }))
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  renderGallery();
-}, (error) => {
-  console.error("Firebase Error (Gallery):", error);
-});
-
 function renderGallery(){
   const grid = document.getElementById("adminGalleryGrid");
   if (!grid) return;
@@ -160,92 +145,99 @@ function renderGallery(){
   `).join("");
 }
 
-/* 4. CRUD ACTIONS */
+// 6. CRUD ACTIONS
 function deleteAnnouncement(id) {
-  if (confirm("Hapus pengumuman ini?")) {
+  if (confirm("Hapus pengumuman ini?") && db) {
     db.ref("announcements/" + id).remove()
       .then(() => showToast("Pengumuman berhasil dihapus"));
   }
 }
 
 function deleteTask(id) {
-  if (confirm("Hapus tugas ini?")) {
+  if (confirm("Hapus tugas ini?") && db) {
     db.ref("tasks/" + id).remove()
       .then(() => showToast("Tugas berhasil dihapus"));
   }
 }
 
 function toggleTaskStatus(id, currentStatus) {
+  if (!db) return;
   const newStatus = currentStatus === "selesai" ? "berjalan" : "selesai";
   db.ref("tasks/" + id).update({ status: newStatus })
     .then(() => showToast("Status tugas diperbarui"));
 }
 
 function deleteGalleryItem(id) {
-  if (confirm("Hapus foto ini dari galeri?")) {
+  if (confirm("Hapus foto ini dari galeri?") && db) {
     db.ref("gallery/" + id).remove()
       .then(() => showToast("Foto berhasil dihapus"));
   }
 }
 
-/* 5. EVENT LISTENERS TOMBOL */
+// 7. EVENT LISTENERS TOMBOL (Memastikan Element Sudah Loaded)
 document.addEventListener("DOMContentLoaded", () => {
   // Tombol Logout
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => logoutAdmin("Berhasil keluar dari Admin Panel."));
+    logoutBtn.onclick = () => logoutAdmin("Berhasil keluar dari Admin Panel.");
   }
 
   // Tombol Buat Pengumuman
   const addAnnBtn = document.getElementById("addAnnouncementBtn");
   if (addAnnBtn) {
-    addAnnBtn.addEventListener("click", () => {
+    addAnnBtn.onclick = () => {
       const title = prompt("Masukkan Judul Pengumuman:");
       if (!title) return;
       const body = prompt("Masukkan Isi Pengumuman:");
       const date = new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' });
 
-      db.ref("announcements").push({
-        title,
-        body,
-        date,
-        createdAt: Date.now()
-      }).then(() => showToast("Pengumuman berhasil dibuat!"));
-    });
+      if (db) {
+        db.ref("announcements").push({
+          title,
+          body,
+          date,
+          createdAt: Date.now()
+        }).then(() => showToast("Pengumuman berhasil dibuat!"));
+      }
+    };
   }
 
   // Tombol Tambah Tugas
   const addTaskBtn = document.getElementById("addTaskBtn");
   if (addTaskBtn) {
-    addTaskBtn.addEventListener("click", () => {
+    addTaskBtn.onclick = () => {
       const subject = prompt("Mata Pelajaran (contoh: PKN, MTK):");
       if (!subject) return;
       const title = prompt("Judul Tugas/Ujian:");
       const desc = prompt("Deskripsi Ringkas:");
       const deadline = prompt("Tenggat Waktu YYYY-MM-DD (contoh: 2026-07-31):");
 
-      db.ref("tasks").push({
-        subject,
-        title,
-        desc,
-        deadline: deadline || new Date().toISOString().split('T')[0],
-        status: "berjalan",
-        createdAt: Date.now()
-      }).then(() => showToast("Tugas berhasil ditambahkan!"));
-    });
+      if (db) {
+        db.ref("tasks").push({
+          subject,
+          title,
+          desc,
+          deadline: deadline || new Date().toISOString().split('T')[0],
+          status: "berjalan",
+          createdAt: Date.now()
+        }).then(() => showToast("Tugas berhasil ditambahkan!"));
+      }
+    };
   }
 
   // Tombol Tambah Foto Galeri
   const addGalBtn = document.getElementById("addGalleryBtn");
   if (addGalBtn) {
-    addGalBtn.addEventListener("click", () => {
+    addGalBtn.onclick = () => {
       const url = prompt("Masukkan URL Gambar/Foto:");
       if (!url) return;
 
-      db.ref("gallery").push({
-        url,
-        createdAt: Date.now()
-      }).then(() => showToast("Foto berhasil ditambahkan!"));
-    });
+      if (db) {
+        db.ref("gallery").push({
+          url,
+          createdAt: Date.now()
+        }).then(() => showToast("Foto berhasil ditambahkan!"));
+      }
+    };
   }
 });
