@@ -9,9 +9,73 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Mencegah flickering halaman saat mengecek autentikasi */
-    body.auth-pending main {
-      display: none !important;
+    /* Styling Tambahan Khusus Admin Panel */
+    body.auth-pending main { display: none !important; }
+
+    .admin-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .btn-danger-sm {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FCA5A5;
+      padding: 0.35rem 0.65rem;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-danger-sm:hover {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
+
+    .admin-gallery-card {
+      position: relative;
+      aspect-ratio: 1/1;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--outline);
+      background: #fff;
+    }
+    .admin-gallery-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .admin-gallery-card .btn-delete-img {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(220, 38, 38, 0.9);
+      color: white;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
   </style>
 </head>
@@ -27,9 +91,9 @@
           <small>Kelas VII Bilal bin Rabbah</small>
         </span>
       </a>
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <a href="../../index.html" class="btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem;">← Kembali ke Web Utama</a>
-        <button id="logoutBtn" class="btn-danger" style="padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">Keluar Admin</button>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <a href="../../index.html" class="btn btn-secondary" style="font-size: 0.82rem;">← Web Utama</a>
+        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; font-size: 0.82rem;">Keluar Admin</button>
       </div>
     </div>
   </header>
@@ -37,37 +101,37 @@
   <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
 
     <!-- ===== MANAJEMEN PENGUMUMAN ===== -->
-    <section class="admin-section" style="margin-bottom: 3rem;">
-      <div class="section-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <section class="section" style="padding: 1rem 0 2rem;">
+      <div class="section-head">
         <div>
           <p class="eyebrow">Manajemen Informasi</p>
           <h2>Pengumuman Kelas</h2>
         </div>
-        <button id="addAnnouncementBtn" class="btn-primary">+ Buat Pengumuman</button>
+        <button id="addAnnouncementBtn" class="btn btn-primary">+ Buat Pengumuman</button>
       </div>
       <div class="announcement-list" id="adminAnnouncementList"></div>
     </section>
 
     <!-- ===== MANAJEMEN TUGAS & UJIAN ===== -->
-    <section class="admin-section" style="margin-bottom: 3rem;">
-      <div class="section-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <section class="section" style="padding: 2rem 0;">
+      <div class="section-head">
         <div>
           <p class="eyebrow">Manajemen Agenda</p>
           <h2>Daftar Tugas &amp; Ujian</h2>
         </div>
-        <button id="addTaskBtn" class="btn-primary">+ Tambah Tugas</button>
+        <button id="addTaskBtn" class="btn btn-primary">+ Tambah Tugas</button>
       </div>
       <div class="task-list" id="adminTaskList"></div>
     </section>
 
     <!-- ===== MANAJEMEN GALERI ===== -->
-    <section class="admin-section">
-      <div class="section-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <section class="section" style="padding: 2rem 0;">
+      <div class="section-head">
         <div>
           <p class="eyebrow">Manajemen Media</p>
           <h2>Galeri Foto Kelas</h2>
         </div>
-        <button id="addGalleryBtn" class="btn-primary">+ Tambah Foto</button>
+        <button id="addGalleryBtn" class="btn btn-primary">+ Tambah Foto</button>
       </div>
       <div class="gallery-grid" id="adminGalleryGrid"></div>
     </section>
