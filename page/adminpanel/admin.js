@@ -1,10 +1,10 @@
 /* =========================================================
-   Admin Panel Script — Styled like app.js
+   Admin Panel Script — Fixed Key Session Storage
    ========================================================= */
 
-// 1. CEK LOGIN SESSION
+// 1. CEK LOGIN SESSION (Menggunakan key 'adminAuth' sesuai Application Tab)
 function checkAuth() {
-  const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
+  const isLoggedIn = sessionStorage.getItem("adminAuth") || localStorage.getItem("adminAuth");
   if (!isLoggedIn || isLoggedIn !== "true") {
     alert("Silakan login sebagai admin terlebih dahulu.");
     window.location.href = "../../index.html";
@@ -13,11 +13,12 @@ function checkAuth() {
   return true;
 }
 
+// Jalankan pengecekan Auth
 if (!checkAuth()) {
   throw new Error("Akses ditolak. Mengalihkan ke halaman utama...");
 }
 
-// 2. HELPER UTILS (Persis app.js)
+// 2. HELPER UTILS
 function escapeHTML(str = ""){
   return String(str).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -35,7 +36,8 @@ function showToast(message) {
 }
 
 function logoutAdmin(message) {
-  sessionStorage.removeItem("adminLoggedIn");
+  sessionStorage.removeItem("adminAuth");
+  localStorage.removeItem("adminAuth");
   if (message) alert(message);
   window.location.href = "../../index.html";
 }
@@ -56,7 +58,7 @@ function resetInactivityTimer() {
 });
 resetInactivityTimer();
 
-// 3. FIREBASE INSTANCE & LOCAL DATA
+// 3. FIREBASE INSTANCE & REALTIME READ
 const db = firebase.database();
 
 let announcements = [];
@@ -70,6 +72,8 @@ db.ref("announcements").on("value", (snap) => {
     .map(([id, data]) => ({ id, ...data }))
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   renderAnnouncements();
+}, (error) => {
+  console.error("Firebase Error (Announcements):", error);
 });
 
 function renderAnnouncements(){
@@ -98,6 +102,8 @@ db.ref("tasks").on("value", (snap) => {
     .map(([id, data]) => ({ id, ...data }))
     .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
   renderTasks();
+}, (error) => {
+  console.error("Firebase Error (Tasks):", error);
 });
 
 function renderTasks(){
@@ -135,6 +141,8 @@ db.ref("gallery").on("value", (snap) => {
     .map(([id, data]) => ({ id, ...data }))
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   renderGallery();
+}, (error) => {
+  console.error("Firebase Error (Gallery):", error);
 });
 
 function renderGallery(){
