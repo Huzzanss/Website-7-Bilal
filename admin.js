@@ -2,7 +2,7 @@
    KREDENSIAL ADMIN — Silakan ubah di bawah ini
    ========================================================= */
 const ADMIN_USER = "admin";
-const ADMIN_PASS = "admin123";
+const ADMIN_PASS = "adminbilalbinrabbah2026-2027";
 
 const CLASS_ICON = "logo-kelas.png";
 
