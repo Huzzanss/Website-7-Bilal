@@ -9,73 +9,116 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Styling Tambahan Khusus Admin Panel */
+    /* ===== Styling Tambahan Khusus Admin Panel ===== */
     body.auth-pending main { display: none !important; }
+    body{ background: var(--surface-bg); }
 
-    .admin-card {
+    /* ---- Header aksen ---- */
+    .site-header{ border-bottom: 1px solid var(--outline); }
+    .admin-chip{
+      font-family: var(--font-body);
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+      color: var(--secondary); background: var(--secondary-tint);
+      border: 1px solid #BFEEE8; padding: 0.1rem 0.5rem; border-radius: var(--radius-full);
+      margin-left: 0.35rem; text-transform: uppercase;
+    }
+    .header-actions{ display:flex; gap:0.5rem; align-items:center; }
+    .btn-icon-label{ display:inline-flex; align-items:center; gap:0.4rem; }
+    .btn-icon-label svg{ width:15px; height:15px; flex-shrink:0; }
+
+    /* ---- Intro / page title ---- */
+    .admin-intro{
+      padding: 1.75rem 0 0.25rem;
+    }
+    .admin-intro h1{ font-size: 1.5rem; color: var(--on-surface); margin-bottom: 0.35rem; }
+    .admin-intro p{ color: var(--on-surface-variant); font-size: 0.92rem; max-width: 56ch; }
+
+    /* ---- Kartu pembungkus tiap section ---- */
+    .admin-panel-card{
       background: var(--surface);
       border: 1px solid var(--outline);
       border-radius: var(--radius-lg);
-      padding: 1.1rem;
       box-shadow: var(--shadow-card);
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 1rem;
+      padding: 1.4rem;
+      margin-top: 1.25rem;
+    }
+    .admin-panel-card .section-head{
+      margin-bottom: 1.1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--outline);
+    }
+    .admin-section-title{ display:flex; align-items:center; gap:0.7rem; }
+    .admin-section-icon{
+      width: 42px; height: 42px; border-radius: var(--radius-md);
+      display:flex; align-items:center; justify-content:center;
+      background: var(--primary-tint); color: var(--primary);
+      flex-shrink: 0;
+    }
+    .admin-section-icon svg{ width: 22px; height: 22px; }
+    .admin-section-icon.tugas{ background: var(--tertiary-tint); color: #B45309; }
+    .admin-section-icon.galeri{ background: var(--secondary-tint); color: var(--secondary-dark); }
+    .admin-section-count{
+      font-size: 0.78rem; color: var(--on-surface-variant); font-weight: 600; margin-top: 0.1rem;
     }
 
-    .btn-danger-sm {
-      background: #FEE2E2;
-      color: #DC2626;
-      border: 1px solid #FCA5A5;
-      padding: 0.35rem 0.65rem;
-      border-radius: var(--radius-sm);
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
+    /* ---- Tombol tambah dengan ikon ---- */
+    .btn-primary .btn-icon-label svg{ color: #fff; }
+
+    /* ---- Item pengumuman & tugas hasil render admin.js ---- */
+    .admin-card-item{
+      transition: box-shadow .15s ease, border-color .15s ease;
     }
-    .btn-danger-sm:hover {
-      background: #DC2626;
-      color: #FFFFFF;
+    .admin-card-item:hover{
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(30, 58, 138, 0.08);
     }
 
-    .admin-gallery-card {
-      position: relative;
-      aspect-ratio: 1/1;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 1px solid var(--outline);
-      background: #fff;
+    /* ---- Tombol icon (hapus, dsb) ---- */
+    .btn-icon{
+      display:inline-flex; align-items:center; justify-content:center;
+      width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: 50%; border: 1px solid var(--outline);
+      background: #fff; color: var(--on-surface-variant);
+      font-size: 1.05rem; line-height: 1;
+      transition: all .15s ease;
     }
-    .admin-gallery-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .btn-icon:hover{ background: var(--primary-tint); color: var(--primary); border-color: var(--primary-tint); }
+    .btn-icon.danger:hover{ background: #FEE2E2; color: #DC2626; border-color: #FCA5A5; }
+
+    /* ---- Tombol status kecil (Tandai Selesai / Berjalan) ---- */
+    .btn-sm{
+      font-family: var(--font-body);
+      font-weight: 700; font-size: 0.78rem;
+      border: 1px solid var(--outline); background: #fff;
+      color: var(--on-surface-variant);
+      padding: 0.4rem 0.75rem; border-radius: var(--radius-full);
+      white-space: nowrap; transition: all .15s ease;
     }
-    .admin-gallery-card .btn-delete-img {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(220, 38, 38, 0.9);
-      color: white;
-      border: none;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    .btn-sm:hover{ background: var(--secondary); border-color: var(--secondary); color:#fff; }
+
+    /* ---- Tombol hapus foto galeri ---- */
+    .delete-img-btn{
+      display:flex; align-items:center; justify-content:center;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: none; background: rgba(11,28,48,0.55); color:#fff;
+      font-size: 0.95rem; line-height: 1; cursor:pointer;
+      backdrop-filter: blur(2px);
+      transition: background .15s ease;
+    }
+    .delete-img-btn:hover{ background: #DC2626; }
+
+    /* ---- Empty state lebih rapi ---- */
+    .empty-note{
+      display:flex; align-items:center; justify-content:center;
+      text-align:center; padding: 2rem 1rem; font-size: 0.9rem;
+      border: 1px dashed var(--outline); border-radius: var(--radius-md);
+      background: var(--surface-bg);
     }
 
-    .action-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    @media (max-width: 640px){
+      .header-inner{ height:auto; padding: 0.75rem 1rem; flex-wrap: wrap; gap: 0.6rem; }
+      .header-actions{ width:100%; justify-content: space-between; }
+      .brand-text small{ display:none; }
     }
   </style>
 </head>
@@ -87,51 +130,96 @@
       <a href="../../index.html" class="brand">
         <span class="brand-badge" id="brandBadge">VII</span>
         <span class="brand-text">
-          <strong>Admin Panel</strong>
+          <strong>Admin Panel <span class="admin-chip">Staff</span></strong>
           <small>Kelas VII Bilal bin Rabbah</small>
         </span>
       </a>
-      <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <a href="../../index.html" class="btn btn-secondary" style="font-size: 0.82rem;">← Web Utama</a>
-        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; font-size: 0.82rem;">Keluar Admin</button>
+      <div class="header-actions">
+        <a href="../../index.html" class="btn btn-secondary" style="font-size: 0.82rem;">
+          <span class="btn-icon-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Web Utama
+          </span>
+        </a>
+        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; font-size: 0.82rem;">
+          <span class="btn-icon-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            Keluar
+          </span>
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <main class="container" style="padding-top: 0; padding-bottom: 4rem;">
+
+    <div class="admin-intro">
+      <h1>Kelola Konten Website Kelas</h1>
+      <p>Tambah, ubah, atau hapus pengumuman, tugas &amp; ujian, dan foto galeri. Perubahan langsung tersimpan dan muncul di halaman utama secara real-time.</p>
+    </div>
 
     <!-- ===== MANAJEMEN PENGUMUMAN ===== -->
-    <section class="section" style="padding: 1rem 0 2rem;">
+    <section class="admin-panel-card">
       <div class="section-head">
-        <div>
-          <p class="eyebrow">Manajemen Informasi</p>
-          <h2>Pengumuman Kelas</h2>
+        <div class="admin-section-title">
+          <span class="admin-section-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.5 5 10 5 10s5-6.5 5-10a5 5 0 0 0-5-5Z"/><circle cx="12" cy="7" r="1.6"/></svg>
+          </span>
+          <div>
+            <p class="eyebrow" style="margin-bottom:0.1rem;">Manajemen Informasi</p>
+            <h2>Pengumuman Kelas</h2>
+          </div>
         </div>
-        <button id="addAnnouncementBtn" class="btn btn-primary">+ Buat Pengumuman</button>
+        <button id="addAnnouncementBtn" class="btn btn-primary">
+          <span class="btn-icon-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Buat Pengumuman
+          </span>
+        </button>
       </div>
       <div class="announcement-list" id="adminAnnouncementList"></div>
     </section>
 
     <!-- ===== MANAJEMEN TUGAS & UJIAN ===== -->
-    <section class="section" style="padding: 2rem 0;">
+    <section class="admin-panel-card">
       <div class="section-head">
-        <div>
-          <p class="eyebrow">Manajemen Agenda</p>
-          <h2>Daftar Tugas &amp; Ujian</h2>
+        <div class="admin-section-title">
+          <span class="admin-section-icon tugas" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.2c0-.7.5-1.2 1.2-1.2H11a1 1 0 0 1 1 1v16"/><path d="M12 4.8h7.8c.7 0 1.2.5 1.2 1.2v13.5"/><path d="M4 19.5c0 1 .8 1.5 1.5 1.5H20"/></svg>
+          </span>
+          <div>
+            <p class="eyebrow" style="margin-bottom:0.1rem;">Manajemen Agenda</p>
+            <h2>Daftar Tugas &amp; Ujian</h2>
+          </div>
         </div>
-        <button id="addTaskBtn" class="btn btn-primary">+ Tambah Tugas</button>
+        <button id="addTaskBtn" class="btn btn-primary">
+          <span class="btn-icon-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Tugas
+          </span>
+        </button>
       </div>
       <div class="task-list" id="adminTaskList"></div>
     </section>
 
     <!-- ===== MANAJEMEN GALERI ===== -->
-    <section class="section" style="padding: 2rem 0;">
+    <section class="admin-panel-card">
       <div class="section-head">
-        <div>
-          <p class="eyebrow">Manajemen Media</p>
-          <h2>Galeri Foto Kelas</h2>
+        <div class="admin-section-title">
+          <span class="admin-section-icon galeri" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="m4 18 5-5 3 3 4-4.5 4 4.5"/></svg>
+          </span>
+          <div>
+            <p class="eyebrow" style="margin-bottom:0.1rem;">Manajemen Media</p>
+            <h2>Galeri Foto Kelas</h2>
+          </div>
         </div>
-        <button id="addGalleryBtn" class="btn btn-primary">+ Tambah Foto</button>
+        <button id="addGalleryBtn" class="btn btn-primary">
+          <span class="btn-icon-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Foto
+          </span>
+        </button>
       </div>
       <div class="gallery-grid" id="adminGalleryGrid"></div>
     </section>
