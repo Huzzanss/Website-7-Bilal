@@ -13,6 +13,14 @@ const TEACHER = {
   photo: "paksugeng.png",
 };
 
+const CLASS_STRUCTURE = [
+  { role: "Ketua Kelas", name: "Muhammad Alfindra Auvar Rahardja", nickname: "", photo: "" },
+  { role: "Wakil Ketua Kelas", name: "Muhammad Asyraf Al Farisi", nickname: "Izi", photo: "" },
+  { role: "Sekretaris", name: "Ahmad Abdullah Hafi Munaji", nickname: "Hafi", photo: "" },
+  { role: "Keamanan", name: "Chaerul Risyad Ferdiansyah", nickname: "Icad", photo: "" },
+  { role: "Kebersihan", name: "Muhammad Hafidz Setiadi", nickname: "", photo: "" },
+];
+
 const STUDENTS = [
   { name: "Chaerul Risyad Ferdiansyah", photo: "" },
   { name: "Ahmad Abdullah Hafi Munaji", photo: "" },
@@ -256,6 +264,19 @@ function renderTeacher(){
   `;
 }
 
+function renderClassStructure(){
+  const grid = document.getElementById("structureGrid");
+  if (!grid) return;
+  grid.innerHTML = CLASS_STRUCTURE.map(s => `
+    <div class="structure-item">
+      <span class="structure-role">${escapeHTML(s.role)}</span>
+      <span class="avatar" style="width:56px;height:56px;font-size:1rem;">${avatarInnerHTML(s.name, s.photo)}</span>
+      <span class="student-name">${escapeHTML(toTitleCase(s.name))}</span>
+      ${s.nickname ? `<span class="structure-nickname">(${escapeHTML(s.nickname)})</span>` : ""}
+    </div>
+  `).join("");
+}
+
 function renderStudents(){
   const list = document.getElementById("studentList");
   if (!list) return;
@@ -310,11 +331,113 @@ function escapeHTML(str = ""){
 }
 function escapeAttr(str = ""){ return escapeHTML(str); }
 
+function showToast(msg, duration = 2600){
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => toast.classList.remove("show"), duration);
+}
+
+/* ===== DARK MODE ===== */
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+}
+const themeToggle = document.getElementById("themeToggle");
+if (themeToggle){
+  themeToggle.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(current);
+    showToast(current === "dark" ? "🌙 Mode gelap aktif" : "☀️ Mode terang aktif", 1600);
+  });
+}
+
+/* ===== EASTER EGG 1: KLIK "BERANDA" 5X -> MINI GAME RAHASIA ===== */
+let berandaClickCount = 0;
+let berandaClickTimer = null;
+const navBeranda = document.getElementById("navBeranda");
+if (navBeranda){
+  navBeranda.addEventListener("click", (e) => {
+    berandaClickCount++;
+    clearTimeout(berandaClickTimer);
+    berandaClickTimer = setTimeout(() => { berandaClickCount = 0; }, 2200);
+
+    if (berandaClickCount === 3){
+      showToast("👀 Terus...", 1200);
+    } else if (berandaClickCount === 4){
+      showToast("🤫 1x lagi...", 1200);
+    } else if (berandaClickCount >= 5){
+      e.preventDefault();
+      berandaClickCount = 0;
+      showToast("🎮 Easter egg ditemukan! Membuka mini game...", 2200);
+      setTimeout(() => { window.location.href = "page/minigame/"; }, 700);
+    }
+  });
+}
+
+/* ===== EASTER EGG 2: KONAMI CODE -> CONFETTI ===== */
+const KONAMI_CODE = ["arrowup","arrowup","arrowdown","arrowdown","arrowleft","arrowright","arrowleft","arrowright","b","a"];
+let konamiProgress = [];
+
+function spawnConfetti(){
+  const colors = ["#1E3A8A","#0B7A70","#F59E0B","#EF4444","#14B8A6"];
+  for (let i = 0; i < 60; i++){
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+    piece.style.left = Math.random() * 100 + "vw";
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (2 + Math.random() * 1.5) + "s";
+    piece.style.animationDelay = (Math.random() * 0.4) + "s";
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 4000);
+  }
+}
+
+function handleKonamiKey(e){
+  const key = e.key.toLowerCase();
+  const expected = KONAMI_CODE[konamiProgress.length];
+  if (key === expected){
+    konamiProgress.push(key);
+    if (konamiProgress.length === KONAMI_CODE.length){
+      konamiProgress = [];
+      spawnConfetti();
+      showToast("🎉 Kode rahasia ditemukan! Selamat!", 3000);
+    }
+  } else {
+    konamiProgress = (key === KONAMI_CODE[0]) ? [key] : [];
+  }
+}
+
+/* ===== EASTER EGG 3: KLIK LOGO 7X -> LOGO MUTER ===== */
+let logoClickCount = 0;
+let logoClickTimer = null;
+const brandBadgeEl = document.getElementById("brandBadge");
+if (brandBadgeEl){
+  brandBadgeEl.addEventListener("click", (e) => {
+    logoClickCount++;
+    clearTimeout(logoClickTimer);
+    logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1800);
+
+    if (logoClickCount >= 7){
+      e.preventDefault();
+      logoClickCount = 0;
+      brandBadgeEl.classList.remove("spin-egg");
+      void brandBadgeEl.offsetWidth;
+      brandBadgeEl.classList.add("spin-egg");
+      showToast("🌀 Logo pusing!", 1600);
+    }
+  });
+}
+
 /* ===== SHORTCUT RAHASIA: KETIK 'admin' UNTUK PINDAH KE HALAMAN LOGIN ===== */
 let secretBuffer = "";
 let secretTimer = null;
 
 window.addEventListener("keydown", (e) => {
+  handleKonamiKey(e);
+
   if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
 
   secretBuffer += e.key.toLowerCase();
@@ -331,5 +454,6 @@ window.addEventListener("keydown", (e) => {
 renderScheduleTabs();
 renderSchedule();
 renderTeacher();
+renderClassStructure();
 renderStudents();
 renderBrandBadge();

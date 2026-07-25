@@ -30,7 +30,41 @@
 
   --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-body: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+
+  --header-bg: rgba(255,255,255,0.92);
 }
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"]{
+  --primary: #7C9AF5;
+  --primary-dark: #9DB4F8;
+  --primary-tint: #1B2542;
+  --secondary: #2DD4BF;
+  --secondary-dark: #5EEAD4;
+  --secondary-tint: #103330;
+  --tertiary: #FBBF24;
+  --tertiary-tint: #2A2210;
+  --deadline-red: #F87171;
+  --success-teal: #2DD4BF;
+
+  --surface-bg: #0B1120;
+  --surface: #151D33;
+  --on-surface: #E8ECF7;
+  --on-surface-variant: #97A3C2;
+  --outline: #2A3452;
+
+  --shadow-card: 0 4px 14px rgba(0,0,0,0.35);
+  --shadow-pop: 0 14px 34px rgba(0,0,0,0.55);
+
+  --header-bg: rgba(11,17,32,0.85);
+}
+[data-theme="dark"] body{ color-scheme: dark; }
+[data-theme="dark"] .announcement-board{ border-color: rgba(245,158,11,0.35); }
+[data-theme="dark"] .announcement-item{ border-color: rgba(245,158,11,0.22); }
+[data-theme="dark"] .status-pill.berjalan{ background: rgba(180,83,9,0.22); color:#FBBF24; }
+[data-theme="dark"] .status-pill.selesai{ background: rgba(45,212,191,0.16); color: var(--secondary-dark); }
+[data-theme="dark"] .structure-role{ border-color: rgba(45,212,191,0.3); }
+[data-theme="dark"] .brand-badge{ box-shadow: 0 0 0 1px rgba(255,255,255,0.06); }
 
 *{ box-sizing: border-box; }
 html{ scroll-behavior: smooth; }
@@ -90,16 +124,17 @@ img{ max-width: 100%; display:block; }
 .btn:active{ transform: scale(0.97); }
 .btn-primary{ background: var(--primary); color:#fff; }
 .btn-primary:hover{ background: var(--primary-dark); }
-.btn-secondary{ background:#fff; color: var(--secondary); border-color: var(--secondary); }
+.btn-secondary{ background: var(--surface); color: var(--secondary); border-color: var(--secondary); }
 .btn-secondary:hover{ background: var(--secondary-tint); }
 .btn-upload{ cursor:pointer; }
 
 /* ===== Header ===== */
 .site-header{
   position: sticky; top:0; z-index: 40;
-  background: rgba(255,255,255,0.92);
+  background: var(--header-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--outline);
+  transition: background .2s ease;
 }
 .header-inner{
   display:flex; align-items:center; justify-content:space-between;
@@ -135,6 +170,21 @@ img{ max-width: 100%; display:block; }
 }
 .nav-toggle span{ width:22px; height:2px; background: var(--on-surface); border-radius:2px; }
 
+/* ===== Theme Toggle ===== */
+.theme-toggle{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:38px; height:38px; border-radius:50%;
+  border:1px solid var(--outline); background: var(--surface);
+  color: var(--on-surface-variant); flex-shrink:0;
+  transition: background .15s ease, color .15s ease, transform .2s ease;
+}
+.theme-toggle:hover{ background: var(--primary-tint); color: var(--primary); }
+.theme-toggle:active{ transform: scale(0.9); }
+.theme-toggle svg{ width:19px; height:19px; }
+.theme-toggle .icon-moon{ display:none; }
+[data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+[data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+
 /* ===== Sections ===== */
 .section{ padding: 2.75rem 0; }
 .section.alt-bg{ background: var(--primary-tint); }
@@ -165,7 +215,7 @@ img{ max-width: 100%; display:block; }
 .board-head h2{ font-size:1.15rem; display:flex; align-items:center; gap:0.4rem; }
 .announcement-list{ display:flex; flex-direction:column; gap:0.7rem; }
 .announcement-item{
-  background:#fff; border-radius: var(--radius-md);
+  background: var(--surface); border-radius: var(--radius-md);
   padding: 0.9rem 1rem; border:1px solid #F3E4B8;
   display:flex; justify-content:space-between; gap:0.75rem;
 }
@@ -184,10 +234,10 @@ img{ max-width: 100%; display:block; }
   display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem;
 }
 .quick-card{
-  background:#fff; border:1px solid var(--outline); border-radius: var(--radius-lg);
+  background: var(--surface); border:1px solid var(--outline); border-radius: var(--radius-lg);
   padding: 1.1rem; box-shadow: var(--shadow-card);
   display:flex; flex-direction:column; gap:0.3rem;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
 }
 .quick-card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-pop); }
 .quick-icon{ font-size:1.5rem; }
@@ -200,15 +250,15 @@ img{ max-width: 100%; display:block; }
   padding-bottom: 0.2rem;
 }
 .schedule-tabs button{
-  border:1px solid var(--outline); background:#fff;
+  border:1px solid var(--outline); background: var(--surface);
   padding:0.5rem 1rem; border-radius: var(--radius-full);
   font-family: var(--font-body); font-weight:700; font-size:0.85rem;
-  white-space:nowrap;
+  white-space:nowrap; color: var(--on-surface);
 }
 .schedule-tabs button.active{ background: var(--primary); color:#fff; border-color:var(--primary); }
 
 .schedule-wrap{
-  background:#fff; border-radius: var(--radius-lg); border:1px solid var(--outline);
+  background: var(--surface); border-radius: var(--radius-lg); border:1px solid var(--outline);
   box-shadow: var(--shadow-card); overflow:hidden;
 }
 .schedule-row{
@@ -230,7 +280,7 @@ img{ max-width: 100%; display:block; }
 /* ===== Tugas ===== */
 .filter-row{ display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
 .chip{
-  border:1px solid var(--outline); background:#fff; border-radius: var(--radius-full);
+  border:1px solid var(--outline); background: var(--surface); border-radius: var(--radius-full);
   padding:0.4rem 0.95rem; font-size:0.85rem; font-weight:700; font-family: var(--font-body);
   color: var(--on-surface-variant);
 }
@@ -238,7 +288,7 @@ img{ max-width: 100%; display:block; }
 
 .task-list{ display:grid; grid-template-columns: repeat(2, 1fr); gap:1rem; }
 .task-card{
-  background:#fff; border:1px solid var(--outline); border-radius: var(--radius-lg);
+  background: var(--surface); border:1px solid var(--outline); border-radius: var(--radius-lg);
   padding:1.1rem; box-shadow: var(--shadow-card);
   display:flex; flex-direction:column; gap:0.55rem;
 }
@@ -288,7 +338,7 @@ img{ max-width: 100%; display:block; }
 }
 .student-item{
   display:flex; flex-direction:column; align-items:center; text-align:center; gap:0.55rem;
-  background:#fff; border:1px solid var(--outline); border-radius: var(--radius-lg);
+  background: var(--surface); border:1px solid var(--outline); border-radius: var(--radius-lg);
   padding: 1.3rem 0.9rem 1.1rem; box-shadow: var(--shadow-card);
   transition: transform .15s ease, box-shadow .15s ease;
   position: relative;
@@ -306,13 +356,34 @@ img{ max-width: 100%; display:block; }
 }
 .student-name{ font-family: var(--font-body); font-weight:700; font-size:0.88rem; line-height:1.3; }
 
+/* ===== Struktur Organisasi Kelas ===== */
+.structure-grid{
+  display:grid; grid-template-columns: repeat(5, 1fr); gap:1rem;
+  margin-bottom: 0.5rem;
+}
+.structure-item{
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:0.45rem;
+  background: var(--surface); border:1px solid var(--outline); border-radius: var(--radius-lg);
+  padding: 1.25rem 0.8rem 1rem; box-shadow: var(--shadow-card);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.structure-item:hover{ transform: translateY(-3px); box-shadow: var(--shadow-pop); }
+.structure-role{
+  font-family: var(--font-body); font-weight:700; font-size:0.68rem;
+  text-transform: uppercase; letter-spacing:0.04em;
+  color: var(--secondary-dark); background: var(--secondary-tint);
+  border: 1px solid #BFEEE8; padding:0.2rem 0.6rem; border-radius: var(--radius-full);
+}
+.structure-item .avatar{ background: var(--tertiary); }
+.structure-nickname{ font-size:0.76rem; color: var(--on-surface-variant); }
+
 /* ===== Galeri ===== */
 .gallery-grid{
   display:grid; grid-template-columns: repeat(4, 1fr); gap:0.9rem;
 }
 .gallery-item{
   position:relative; aspect-ratio:1/1; border-radius: var(--radius-md);
-  overflow:hidden; border:1px solid var(--outline); background:#fff;
+  overflow:hidden; border:1px solid var(--outline); background: var(--surface);
 }
 .gallery-item img{ width:100%; height:100%; object-fit:cover; }
 .gallery-remove{
@@ -323,7 +394,7 @@ img{ max-width: 100%; display:block; }
 .gallery-empty{
   grid-column: 1/-1; text-align:center; padding: 2.5rem 1rem;
   color: var(--on-surface-variant); border:1px dashed var(--outline);
-  border-radius: var(--radius-lg); background:#fff;
+  border-radius: var(--radius-lg); background: var(--surface);
 }
 
 /* ===== Footer ===== */
@@ -346,9 +417,9 @@ img{ max-width: 100%; display:block; }
 }
 .fab-menu.open{ display:flex; }
 .fab-menu button{
-  background:#fff; border:1px solid var(--outline); border-radius: var(--radius-full);
+  background: var(--surface); border:1px solid var(--outline); border-radius: var(--radius-full);
   padding:0.6rem 1rem; font-weight:600; font-size:0.85rem; box-shadow: var(--shadow-card);
-  text-align:left;
+  text-align:left; color: var(--on-surface);
 }
 
 /* ===== Modal ===== */
@@ -358,7 +429,7 @@ img{ max-width: 100%; display:block; }
 }
 .modal-backdrop.open{ display:flex; }
 .modal{
-  background:#fff; width:100%; max-width:480px;
+  background: var(--surface); width:100%; max-width:480px;
   border-radius: 1.25rem 1.25rem 0 0;
   padding: 1.25rem; max-height:88vh; overflow-y:auto;
   animation: slideUp .2s ease;
@@ -386,11 +457,25 @@ img{ max-width: 100%; display:block; }
 /* ===== Toast ===== */
 .toast{
   position:fixed; left:50%; bottom:1.4rem; transform:translate(-50%, 20px);
-  background: var(--on-surface); color:#fff; padding:0.7rem 1.2rem;
+  background: #111827; color:#fff; padding:0.7rem 1.2rem;
   border-radius: var(--radius-full); font-size:0.88rem; font-weight:600;
   opacity:0; pointer-events:none; transition: all .25s ease; z-index:80;
 }
 .toast.show{ opacity:1; transform:translate(-50%, 0); }
+
+/* ===== Easter Egg: Logo Spin ===== */
+@keyframes brandSpin{ from{ transform: rotate(0deg) scale(1); } 50%{ transform: rotate(180deg) scale(1.15); } to{ transform: rotate(360deg) scale(1); } }
+.brand-badge.spin-egg{ animation: brandSpin .8s ease; }
+
+/* ===== Easter Egg: Konami Confetti ===== */
+.confetti-piece{
+  position: fixed; top:-20px; z-index: 90; pointer-events:none;
+  width:9px; height:14px; opacity:0.9;
+  animation-name: confettiFall; animation-timing-function: linear; animation-fill-mode: forwards;
+}
+@keyframes confettiFall{
+  to{ transform: translateY(105vh) rotate(540deg); opacity:0.3; }
+}
 
 /* ===== Icons (SVG, bukan emoji) ===== */
 svg{ display:block; }
@@ -410,6 +495,7 @@ svg{ display:block; }
   .task-list{ grid-template-columns: 1fr; }
   .gallery-grid{ grid-template-columns: repeat(3, 1fr); }
   .student-list{ grid-template-columns: repeat(3, 1fr); }
+  .structure-grid{ grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 720px){
@@ -427,4 +513,5 @@ svg{ display:block; }
   .fab{ display:flex; align-items:center; justify-content:center; }
   .gallery-grid{ grid-template-columns: repeat(2, 1fr); }
   .student-list{ grid-template-columns: repeat(2, 1fr); }
+  .structure-grid{ grid-template-columns: repeat(2, 1fr); }
 }
