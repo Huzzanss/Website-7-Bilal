@@ -1,45 +1,8 @@
 /* =========================================================
-   Admin Panel Script + Auto Logout & Safe Firebase Handler
+   Admin Panel Script — Robust & Fail-safe Version
    ========================================================= */
 
-// 1. CEK AUTHENTICATION (Sesi Login)
-function checkAuth() {
-  const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
-  if (!isLoggedIn || isLoggedIn !== "true") {
-    alert("Akses ditolak. Silakan login terlebih dahulu!");
-    window.location.href = "../../index.html";
-    return false;
-  }
-  return true;
-}
-
-// Cek Auth Saat Script Dimuat
-checkAuth();
-
-// 2. FITUR AUTO LOGOUT INACTIVITY (15 Menit)
-const INACTIVE_TIMEOUT = 15 * 60 * 1000;
-let inactivityTimer;
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(() => {
-    logoutAdmin("Sesi telah berakhir karena tidak ada aktivitas selama 15 menit.");
-  }, INACTIVE_TIMEOUT);
-}
-
-['mousemove', 'keydown', 'click', 'scroll'].forEach(event => {
-  window.addEventListener(event, resetInactivityTimer);
-});
-resetInactivityTimer();
-
-// 3. FUNGSI LOGOUT
-function logoutAdmin(message) {
-  sessionStorage.removeItem("adminLoggedIn");
-  if (message) alert(message);
-  window.location.href = "../../index.html";
-}
-
-// 4. HELPER FUNCTIONS
+// 1. HELPER ESCAPE STRING
 function escapeHTML(str) {
   if (!str) return "";
   return String(str)
@@ -63,7 +26,39 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 3000);
 }
 
-// 5. GLOBAL DATA & RENDER FUNCTIONS
+// 2. CEK AUTHENTICATION & AUTO LOGOUT
+function checkAuth() {
+  const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
+  if (!isLoggedIn || isLoggedIn !== "true") {
+    alert("Silakan login sebagai admin terlebih dahulu.");
+    window.location.href = "../../index.html";
+    return false;
+  }
+  return true;
+}
+
+function logoutAdmin(message) {
+  sessionStorage.removeItem("adminLoggedIn");
+  if (message) alert(message);
+  window.location.href = "../../index.html";
+}
+
+// Timer Inaktivitas (Auto Logout 15 Menit)
+const INACTIVE_TIMEOUT = 15 * 60 * 1000;
+let inactivityTimer;
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    logoutAdmin("Sesi telah berakhir karena tidak ada aktivitas selama 15 menit.");
+  }, INACTIVE_TIMEOUT);
+}
+
+['mousemove', 'keydown', 'click', 'scroll'].forEach(event => {
+  window.addEventListener(event, resetInactivityTimer);
+});
+
+// 3. DATA & RENDER FUNCTIONS
 let dbAnnouncements = [];
 let dbTasks = [];
 let dbGallery = [];
@@ -72,7 +67,7 @@ function renderAnnouncements() {
   const list = document.getElementById("adminAnnouncementList");
   if (!list) return;
 
-  if (!dbAnnouncements.length) {
+  if (!dbAnnouncements || !dbAnnouncements.length) {
     list.innerHTML = `<p class="empty-note">Belum ada pengumuman.</p>`;
     return;
   }
@@ -93,7 +88,7 @@ function renderTasks() {
   const list = document.getElementById("adminTaskList");
   if (!list) return;
 
-  if (!dbTasks.length) {
+  if (!dbTasks || !dbTasks.length) {
     list.innerHTML = `<p class="empty-note">Belum ada tugas/ujian.</p>`;
     return;
   }
@@ -123,7 +118,7 @@ function renderGallery() {
   const grid = document.getElementById("adminGalleryGrid");
   if (!grid) return;
 
-  if (!dbGallery.length) {
+  if (!dbGallery || !dbGallery.length) {
     grid.innerHTML = `<div class="gallery-empty">Belum ada foto kegiatan.</div>`;
     return;
   }
@@ -136,45 +131,41 @@ function renderGallery() {
   `).join("");
 }
 
-// 6. FIREBASE REALTIME LISTENERS
+// 4. FIREBASE DATA SYNC
 function initFirebaseData() {
   if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) {
-    console.warn("Firebase belum terinisialisasi dengan benar.");
+    console.error("Firebase SDK belum dimuat. Periksa file firebase-config.js kamu.");
     renderAnnouncements();
     renderTasks();
     renderGallery();
     return;
   }
 
-  try {
-    const db = firebase.database();
+  const db = firebase.database();
 
-    // Load Pengumuman
-    db.ref("announcements").on("value", snapshot => {
-      const data = snapshot.val() || {};
-      dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-      renderAnnouncements();
-    }, err => console.error(err));
+  // Listener Pengumuman
+  db.ref("announcements").on("value", snapshot => {
+    const data = snapshot.val() || {};
+    dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    renderAnnouncements();
+  });
 
-    // Load Tugas
-    db.ref("tasks").on("value", snapshot => {
-      const data = snapshot.val() || {};
-      dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-      renderTasks();
-    }, err => console.error(err));
+  // Listener Tugas
+  db.ref("tasks").on("value", snapshot => {
+    const data = snapshot.val() || {};
+    dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    renderTasks();
+  });
 
-    // Load Galeri
-    db.ref("gallery").on("value", snapshot => {
-      const data = snapshot.val() || {};
-      dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-      renderGallery();
-    }, err => console.error(err));
-  } catch (e) {
-    console.error("Firebase Error:", e);
-  }
+  // Listener Galeri
+  db.ref("gallery").on("value", snapshot => {
+    const data = snapshot.val() || {};
+    dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    renderGallery();
+  });
 }
 
-// 7. ACTION CRUD FUNCTIONS
+// 5. CRUD ACTIONS
 function deleteAnnouncement(id) {
   if (confirm("Hapus pengumuman ini?")) {
     firebase.database().ref("announcements/" + id).remove()
@@ -202,15 +193,21 @@ function deleteGalleryItem(id) {
   }
 }
 
-// 8. EVENT LISTENERS SETUP
+// 6. INITIALIZATION & EVENTS
 document.addEventListener("DOMContentLoaded", () => {
-  // Tombol Logout
+  // Cek Login Session saat halaman dibuka
+  if (!checkAuth()) return;
+  
+  // Start inactivity timer
+  resetInactivityTimer();
+
+  // Event Logout
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => logoutAdmin("Berhasil keluar dari Admin Panel."));
   }
 
-  // Tambah Pengumuman
+  // Event Buat Pengumuman
   const addAnnBtn = document.getElementById("addAnnouncementBtn");
   if (addAnnBtn) {
     addAnnBtn.addEventListener("click", () => {
@@ -226,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Tambah Tugas
+  // Event Tambah Tugas
   const addTaskBtn = document.getElementById("addTaskBtn");
   if (addTaskBtn) {
     addTaskBtn.addEventListener("click", () => {
@@ -244,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Tambah Foto
+  // Event Tambah Foto
   const addGalBtn = document.getElementById("addGalleryBtn");
   if (addGalBtn) {
     addGalBtn.addEventListener("click", () => {
@@ -258,6 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Inisialisasi Firebase & Data
+  // Load Data dari Firebase Realtime Database
   initFirebaseData();
 });
