@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Kelas VII Bilal bin Rabbah</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../../logo-kelas.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <style>
+    /* Mencegah flickering halaman saat mengecek autentikasi */
+    body.auth-pending main {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="auth-pending">
+
+  <!-- ===== HEADER / NAV ADMIN ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../../index.html" class="brand">
+        <span class="brand-badge" id="brandBadge">VII</span>
+        <span class="brand-text">
+          <strong>Admin Panel</strong>
+          <small>Kelas VII Bilal bin Rabbah</small>
+        </span>
+      </a>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <a href="../../index.html" class="btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem;">← Kembali ke Web Utama</a>
+        <button id="logoutBtn" class="btn-danger" style="padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">Keluar Admin</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+    <!-- ===== MANAJEMEN PENGUMUMAN ===== -->
+    <section class="admin-section" style="margin-bottom: 3rem;">
+      <div class="section-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <p class="eyebrow">Manajemen Informasi</p>
+          <h2>Pengumuman Kelas</h2>
+        </div>
+        <button id="addAnnouncementBtn" class="btn-primary">+ Buat Pengumuman</button>
+      </div>
+      <div class="announcement-list" id="adminAnnouncementList"></div>
+    </section>
+
+    <!-- ===== MANAJEMEN TUGAS & UJIAN ===== -->
+    <section class="admin-section" style="margin-bottom: 3rem;">
+      <div class="section-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <p class="eyebrow">Manajemen Agenda</p>
+          <h2>Daftar Tugas &amp; Ujian</h2>
+        </div>
+        <button id="addTaskBtn" class="btn-primary">+ Tambah Tugas</button>
+      </div>
+      <div class="task-list" id="adminTaskList"></div>
+    </section>
+
+    <!-- ===== MANAJEMEN GALERI ===== -->
+    <section class="admin-section">
+      <div class="section-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <p class="eyebrow">Manajemen Media</p>
+          <h2>Galeri Foto Kelas</h2>
+        </div>
+        <button id="addGalleryBtn" class="btn-primary">+ Tambah Foto</button>
+      </div>
+      <div class="gallery-grid" id="adminGalleryGrid"></div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase Client SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="../../firebase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
