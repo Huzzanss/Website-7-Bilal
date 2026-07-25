@@ -298,6 +298,27 @@ function escapeHTML(str = ""){
 }
 function escapeAttr(str = ""){ return escapeHTML(str); }
 
+/* ===== SHORTCUT RAHASIA: KETIK 'admin' UNTUK PINDAH KE ADMIN PANEL ===== */
+let secretBuffer = "";
+let secretTimer = null;
+
+window.addEventListener("keydown", (e) => {
+  // Biarkan jika user sedang berada di input field/textarea lain jika ada
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+
+  // Rekam huruf yang diketik
+  secretBuffer += e.key.toLowerCase();
+
+  // Reset penyimpan teks jika tidak mengetik lagi dalam 1.5 detik
+  clearTimeout(secretTimer);
+  secretTimer = setTimeout(() => { secretBuffer = ""; }, 1500);
+
+  // Jika teks berakhiran "admin", alihkan ke halaman admin.html
+  if (secretBuffer.endsWith("admin")){
+    window.location.href = "admin.html";
+  }
+});
+
 /* Init */
 renderScheduleTabs();
 renderSchedule();
