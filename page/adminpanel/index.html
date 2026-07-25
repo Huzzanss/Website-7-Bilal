@@ -9,18 +9,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Custom CSS tambahan khusus tampilan Admin Card & Galeri */
-    .admin-card-item {
-      background: #ffffff;
-      border: 1px solid var(--outline, #D8DFEA);
-      border-radius: var(--radius-lg, 1rem);
+    /* Styling Tambahan Khusus Admin Panel */
+    body.auth-pending main { display: none !important; }
+
+    .admin-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius-lg);
       padding: 1.1rem;
-      box-shadow: var(--shadow-card, 0 4px 12px rgba(11, 28, 48, 0.06));
+      box-shadow: var(--shadow-card);
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 1rem;
-      margin-bottom: 0.8rem;
     }
 
     .btn-danger-sm {
@@ -28,7 +29,7 @@
       color: #DC2626;
       border: 1px solid #FCA5A5;
       padding: 0.35rem 0.65rem;
-      border-radius: var(--radius-sm, 0.5rem);
+      border-radius: var(--radius-sm);
       font-weight: 700;
       font-size: 0.8rem;
       cursor: pointer;
@@ -43,9 +44,9 @@
     .admin-gallery-card {
       position: relative;
       aspect-ratio: 1/1;
-      border-radius: var(--radius-md, 0.75rem);
+      border-radius: var(--radius-md);
       overflow: hidden;
-      border: 1px solid var(--outline, #D8DFEA);
+      border: 1px solid var(--outline);
       background: #fff;
     }
     .admin-gallery-card img {
@@ -53,7 +54,7 @@
       height: 100%;
       object-fit: cover;
     }
-    .admin-gallery-card .delete-img-btn {
+    .admin-gallery-card .btn-delete-img {
       position: absolute;
       top: 8px;
       right: 8px;
@@ -70,11 +71,17 @@
       justify-content: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
+
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
   </style>
 </head>
-<body>
+<body class="auth-pending">
 
-  <!-- HEADER -->
+  <!-- ===== HEADER / NAV ADMIN ===== -->
   <header class="site-header">
     <div class="container header-inner">
       <a href="../../index.html" class="brand">
@@ -84,17 +91,16 @@
           <small>Kelas VII Bilal bin Rabbah</small>
         </span>
       </a>
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <a href="../../index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">← Web Utama</a>
-        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; padding: 0.5rem 1rem; font-size: 0.85rem;">Keluar Admin</button>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <a href="../../index.html" class="btn btn-secondary" style="font-size: 0.82rem;">← Web Utama</a>
+        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; font-size: 0.82rem;">Keluar Admin</button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
 
-    <!-- MANAJEMEN PENGUMUMAN -->
+    <!-- ===== MANAJEMEN PENGUMUMAN ===== -->
     <section class="section" style="padding: 1rem 0 2rem;">
       <div class="section-head">
         <div>
@@ -106,7 +112,7 @@
       <div class="announcement-list" id="adminAnnouncementList"></div>
     </section>
 
-    <!-- MANAJEMEN TUGAS & UJIAN -->
+    <!-- ===== MANAJEMEN TUGAS & UJIAN ===== -->
     <section class="section" style="padding: 2rem 0;">
       <div class="section-head">
         <div>
@@ -118,7 +124,7 @@
       <div class="task-list" id="adminTaskList"></div>
     </section>
 
-    <!-- MANAJEMEN GALERI -->
+    <!-- ===== MANAJEMEN GALERI ===== -->
     <section class="section" style="padding: 2rem 0;">
       <div class="section-head">
         <div>
