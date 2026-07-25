@@ -1,32 +1,8 @@
 /* =========================================================
-   Admin Panel Script — Robust & Fail-safe Version
+   Admin Panel Script — Styled like app.js
    ========================================================= */
 
-// 1. HELPER ESCAPE STRING
-function escapeHTML(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function escapeAttr(str) {
-  if (!str) return "";
-  return String(str).replace(/"/g, "&quot;");
-}
-
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3000);
-}
-
-// 2. CEK AUTHENTICATION & AUTO LOGOUT
+// 1. CEK LOGIN SESSION
 function checkAuth() {
   const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
   if (!isLoggedIn || isLoggedIn !== "true") {
@@ -37,13 +13,34 @@ function checkAuth() {
   return true;
 }
 
+if (!checkAuth()) {
+  throw new Error("Akses ditolak. Mengalihkan ke halaman utama...");
+}
+
+// 2. HELPER UTILS (Persis app.js)
+function escapeHTML(str = ""){
+  return String(str).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function escapeAttr(str = ""){ return escapeHTML(str); }
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
 function logoutAdmin(message) {
   sessionStorage.removeItem("adminLoggedIn");
   if (message) alert(message);
   window.location.href = "../../index.html";
 }
 
-// Timer Inaktivitas (Auto Logout 15 Menit)
+// Auto Logout 15 Menit Inaktivitas
 const INACTIVE_TIMEOUT = 15 * 60 * 1000;
 let inactivityTimer;
 
@@ -54,25 +51,35 @@ function resetInactivityTimer() {
   }, INACTIVE_TIMEOUT);
 }
 
-['mousemove', 'keydown', 'click', 'scroll'].forEach(event => {
-  window.addEventListener(event, resetInactivityTimer);
+['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
+  window.addEventListener(evt, resetInactivityTimer);
+});
+resetInactivityTimer();
+
+// 3. FIREBASE INSTANCE & LOCAL DATA
+const db = firebase.database();
+
+let announcements = [];
+let tasks = [];
+let gallery = [];
+
+/* REALTIME READ PENGUMUMAN */
+db.ref("announcements").on("value", (snap) => {
+  const val = snap.val() || {};
+  announcements = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  renderAnnouncements();
 });
 
-// 3. DATA & RENDER FUNCTIONS
-let dbAnnouncements = [];
-let dbTasks = [];
-let dbGallery = [];
-
-function renderAnnouncements() {
+function renderAnnouncements(){
   const list = document.getElementById("adminAnnouncementList");
   if (!list) return;
-
-  if (!dbAnnouncements || !dbAnnouncements.length) {
+  if (!announcements.length){
     list.innerHTML = `<p class="empty-note">Belum ada pengumuman.</p>`;
     return;
   }
-
-  list.innerHTML = dbAnnouncements.map(a => `
+  list.innerHTML = announcements.map(a => `
     <div class="admin-card">
       <div>
         <strong style="font-family: var(--font-display, sans-serif); font-size: 1rem; color: var(--on-surface, #000); display: block; margin-bottom: 0.3rem;">${escapeHTML(a.title)}</strong>
@@ -84,16 +91,23 @@ function renderAnnouncements() {
   `).join("");
 }
 
-function renderTasks() {
+/* REALTIME READ TUGAS */
+db.ref("tasks").on("value", (snap) => {
+  const val = snap.val() || {};
+  tasks = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
+  renderTasks();
+});
+
+function renderTasks(){
   const list = document.getElementById("adminTaskList");
   if (!list) return;
-
-  if (!dbTasks || !dbTasks.length) {
+  if (!tasks.length){
     list.innerHTML = `<p class="empty-note">Belum ada tugas/ujian.</p>`;
     return;
   }
-
-  list.innerHTML = dbTasks.map(t => `
+  list.innerHTML = tasks.map(t => `
     <div class="task-card">
       <div class="task-top">
         <span class="task-subject">${escapeHTML(t.subject)}</span>
@@ -114,16 +128,23 @@ function renderTasks() {
   `).join("");
 }
 
-function renderGallery() {
+/* REALTIME READ GALERI */
+db.ref("gallery").on("value", (snap) => {
+  const val = snap.val() || {};
+  gallery = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  renderGallery();
+});
+
+function renderGallery(){
   const grid = document.getElementById("adminGalleryGrid");
   if (!grid) return;
-
-  if (!dbGallery || !dbGallery.length) {
+  if (!gallery.length){
     grid.innerHTML = `<div class="gallery-empty">Belum ada foto kegiatan.</div>`;
     return;
   }
-
-  grid.innerHTML = dbGallery.map(g => `
+  grid.innerHTML = gallery.map(g => `
     <div class="admin-gallery-card">
       <img src="${escapeAttr(g.url)}" alt="Dokumentasi kelas" loading="lazy">
       <button class="btn-delete-img" onclick="deleteGalleryItem('${g.id}')">&times;</button>
@@ -131,83 +152,43 @@ function renderGallery() {
   `).join("");
 }
 
-// 4. FIREBASE DATA SYNC
-function initFirebaseData() {
-  if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) {
-    console.error("Firebase SDK belum dimuat. Periksa file firebase-config.js kamu.");
-    renderAnnouncements();
-    renderTasks();
-    renderGallery();
-    return;
-  }
-
-  const db = firebase.database();
-
-  // Listener Pengumuman
-  db.ref("announcements").on("value", snapshot => {
-    const data = snapshot.val() || {};
-    dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    renderAnnouncements();
-  });
-
-  // Listener Tugas
-  db.ref("tasks").on("value", snapshot => {
-    const data = snapshot.val() || {};
-    dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    renderTasks();
-  });
-
-  // Listener Galeri
-  db.ref("gallery").on("value", snapshot => {
-    const data = snapshot.val() || {};
-    dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    renderGallery();
-  });
-}
-
-// 5. CRUD ACTIONS
+/* 4. CRUD ACTIONS */
 function deleteAnnouncement(id) {
   if (confirm("Hapus pengumuman ini?")) {
-    firebase.database().ref("announcements/" + id).remove()
+    db.ref("announcements/" + id).remove()
       .then(() => showToast("Pengumuman berhasil dihapus"));
   }
 }
 
 function deleteTask(id) {
   if (confirm("Hapus tugas ini?")) {
-    firebase.database().ref("tasks/" + id).remove()
+    db.ref("tasks/" + id).remove()
       .then(() => showToast("Tugas berhasil dihapus"));
   }
 }
 
 function toggleTaskStatus(id, currentStatus) {
   const newStatus = currentStatus === "selesai" ? "berjalan" : "selesai";
-  firebase.database().ref("tasks/" + id).update({ status: newStatus })
+  db.ref("tasks/" + id).update({ status: newStatus })
     .then(() => showToast("Status tugas diperbarui"));
 }
 
 function deleteGalleryItem(id) {
   if (confirm("Hapus foto ini dari galeri?")) {
-    firebase.database().ref("gallery/" + id).remove()
+    db.ref("gallery/" + id).remove()
       .then(() => showToast("Foto berhasil dihapus"));
   }
 }
 
-// 6. INITIALIZATION & EVENTS
+/* 5. EVENT LISTENERS TOMBOL */
 document.addEventListener("DOMContentLoaded", () => {
-  // Cek Login Session saat halaman dibuka
-  if (!checkAuth()) return;
-  
-  // Start inactivity timer
-  resetInactivityTimer();
-
-  // Event Logout
+  // Tombol Logout
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => logoutAdmin("Berhasil keluar dari Admin Panel."));
   }
 
-  // Event Buat Pengumuman
+  // Tombol Buat Pengumuman
   const addAnnBtn = document.getElementById("addAnnouncementBtn");
   if (addAnnBtn) {
     addAnnBtn.addEventListener("click", () => {
@@ -216,14 +197,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const body = prompt("Masukkan Isi Pengumuman:");
       const date = new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' });
 
-      if (typeof firebase !== "undefined" && firebase.apps.length) {
-        firebase.database().ref("announcements").push({ title, body, date })
-          .then(() => showToast("Pengumuman berhasil dibuat!"));
-      }
+      db.ref("announcements").push({
+        title,
+        body,
+        date,
+        createdAt: Date.now()
+      }).then(() => showToast("Pengumuman berhasil dibuat!"));
     });
   }
 
-  // Event Tambah Tugas
+  // Tombol Tambah Tugas
   const addTaskBtn = document.getElementById("addTaskBtn");
   if (addTaskBtn) {
     addTaskBtn.addEventListener("click", () => {
@@ -231,30 +214,30 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!subject) return;
       const title = prompt("Judul Tugas/Ujian:");
       const desc = prompt("Deskripsi Ringkas:");
-      const deadline = prompt("Tenggat Waktu (contoh: 2026-07-31):");
+      const deadline = prompt("Tenggat Waktu YYYY-MM-DD (contoh: 2026-07-31):");
 
-      if (typeof firebase !== "undefined" && firebase.apps.length) {
-        firebase.database().ref("tasks").push({
-          subject, title, desc, deadline, status: "berjalan"
-        }).then(() => showToast("Tugas berhasil ditambahkan!"));
-      }
+      db.ref("tasks").push({
+        subject,
+        title,
+        desc,
+        deadline: deadline || new Date().toISOString().split('T')[0],
+        status: "berjalan",
+        createdAt: Date.now()
+      }).then(() => showToast("Tugas berhasil ditambahkan!"));
     });
   }
 
-  // Event Tambah Foto
+  // Tombol Tambah Foto Galeri
   const addGalBtn = document.getElementById("addGalleryBtn");
   if (addGalBtn) {
     addGalBtn.addEventListener("click", () => {
       const url = prompt("Masukkan URL Gambar/Foto:");
       if (!url) return;
 
-      if (typeof firebase !== "undefined" && firebase.apps.length) {
-        firebase.database().ref("gallery").push({ url })
-          .then(() => showToast("Foto berhasil ditambahkan!"));
-      }
+      db.ref("gallery").push({
+        url,
+        createdAt: Date.now()
+      }).then(() => showToast("Foto berhasil ditambahkan!"));
     });
   }
-
-  // Load Data dari Firebase Realtime Database
-  initFirebaseData();
 });
