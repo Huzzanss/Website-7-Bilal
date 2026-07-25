@@ -9,13 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Styling Tambahan Admin Panel */
+    /* Styling Khusus Admin Panel */
     .admin-card {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: var(--radius-lg);
+      background: var(--surface, #ffffff);
+      border: 1px solid var(--outline, #D8DFEA);
+      border-radius: var(--radius-lg, 1rem);
       padding: 1.1rem;
-      box-shadow: var(--shadow-card);
+      box-shadow: var(--shadow-card, 0 4px 12px rgba(11, 28, 48, 0.06));
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -27,7 +27,7 @@
       color: #DC2626;
       border: 1px solid #FCA5A5;
       padding: 0.35rem 0.65rem;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-sm, 0.5rem);
       font-weight: 700;
       font-size: 0.8rem;
       cursor: pointer;
@@ -42,9 +42,9 @@
     .admin-gallery-card {
       position: relative;
       aspect-ratio: 1/1;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-md, 0.75rem);
       overflow: hidden;
-      border: 1px solid var(--outline);
+      border: 1px solid var(--outline, #D8DFEA);
       background: #fff;
     }
     .admin-gallery-card img {
