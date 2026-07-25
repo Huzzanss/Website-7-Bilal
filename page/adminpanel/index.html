@@ -9,9 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Styling Tambahan Khusus Admin Panel */
-    body.auth-pending main { display: none !important; }
-
+    /* Styling Tambahan Admin Panel */
     .admin-card {
       background: var(--surface);
       border: 1px solid var(--outline);
@@ -79,13 +77,13 @@
     }
   </style>
 </head>
-<body class="auth-pending">
+<body>
 
-  <!-- ===== HEADER / NAV ADMIN ===== -->
+  <!-- HEADER -->
   <header class="site-header">
     <div class="container header-inner">
       <a href="../../index.html" class="brand">
-        <span class="brand-badge" id="brandBadge">VII</span>
+        <span class="brand-badge">VII</span>
         <span class="brand-text">
           <strong>Admin Panel</strong>
           <small>Kelas VII Bilal bin Rabbah</small>
@@ -98,9 +96,10 @@
     </div>
   </header>
 
+  <!-- MAIN CONTENT -->
   <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
 
-    <!-- ===== MANAJEMEN PENGUMUMAN ===== -->
+    <!-- PENGUMUMAN -->
     <section class="section" style="padding: 1rem 0 2rem;">
       <div class="section-head">
         <div>
@@ -112,7 +111,7 @@
       <div class="announcement-list" id="adminAnnouncementList"></div>
     </section>
 
-    <!-- ===== MANAJEMEN TUGAS & UJIAN ===== -->
+    <!-- TUGAS & UJIAN -->
     <section class="section" style="padding: 2rem 0;">
       <div class="section-head">
         <div>
@@ -124,7 +123,7 @@
       <div class="task-list" id="adminTaskList"></div>
     </section>
 
-    <!-- ===== MANAJEMEN GALERI ===== -->
+    <!-- GALERI -->
     <section class="section" style="padding: 2rem 0;">
       <div class="section-head">
         <div>
