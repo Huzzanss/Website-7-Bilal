@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Admin Panel Custom Styles */
     .admin-card {
       background: #ffffff;
       border: 1px solid var(--outline, #D8DFEA);
@@ -146,14 +145,16 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Firebase Client SDK -->
+  <!-- Firebase CDN SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <!-- AMAN: Coba load firebase-config external, jika gagal pakai fallback/try-catch -->
   <script src="../../firebase-config.js"></script>
 
-  <!-- ADMIN LOGIC SCRIPT (DIRECT INTEGRATION) -->
+  <!-- ALL IN ONE SCRIPT -->
   <script>
-    // 1. UTILITY FUNCTIONS
+    // 1. HELPER FUNCTIONS
     function escapeHTML(str) {
       if (!str) return "";
       return String(str)
@@ -177,39 +178,41 @@
       setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
-    // 2. AUTHENTICATION & SESSION
+    // 2. CEK LOGIN & AUTO LOGOUT
     function checkAuth() {
-      const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
-      if (!isLoggedIn || isLoggedIn !== "true") {
-        alert("Akses ditolak! Silakan login terlebih dahulu.");
-        window.location.href = "../../index.html";
-        return false;
+      try {
+        const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
+        if (!isLoggedIn || isLoggedIn !== "true") {
+          alert("Silakan login sebagai admin terlebih dahulu!");
+          window.location.href = "../../index.html";
+          return false;
+        }
+      } catch (e) {
+        console.warn("SessionStorage Error:", e);
       }
       return true;
     }
 
-    function logoutAdmin(message) {
-      sessionStorage.removeItem("adminLoggedIn");
-      if (message) alert(message);
+    function logoutAdmin(msg) {
+      try { sessionStorage.removeItem("adminLoggedIn"); } catch(e){}
+      if (msg) alert(msg);
       window.location.href = "../../index.html";
     }
 
-    // Auto Logout Inactivity (15 Menit)
-    const INACTIVE_TIMEOUT = 15 * 60 * 1000;
+    // Timer Inaktivitas 15 Menit
     let inactivityTimer;
-
     function resetInactivityTimer() {
       clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => {
-        logoutAdmin("Sesi berakhir karena tidak ada aktivitas selama 15 menit.");
-      }, INACTIVE_TIMEOUT);
+        logoutAdmin("Sesi telah berakhir karena tidak ada aktivitas selama 15 menit.");
+      }, 15 * 60 * 1000);
     }
 
     ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
       window.addEventListener(evt, resetInactivityTimer);
     });
 
-    // 3. GLOBAL STORAGE & RENDERERS
+    // 3. RENDER FUNCTIONS
     let dbAnnouncements = [];
     let dbTasks = [];
     let dbGallery = [];
@@ -282,41 +285,45 @@
       `).join("");
     }
 
-    // 4. FIREBASE INITIALIZATION
+    // 4. FIREBASE LISTENERS (SAFE)
     function initFirebaseData() {
       if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) {
-        console.error("Firebase tidak ditemukan. Periksa "../../firebase-config.js"");
+        console.error("Firebase tidak terdeteksi. Periksa file firebase-config.js.");
         renderAnnouncements();
         renderTasks();
         renderGallery();
         return;
       }
 
-      const db = firebase.database();
+      try {
+        const db = firebase.database();
 
-      // Listener Pengumuman
-      db.ref("announcements").on("value", snapshot => {
-        const data = snapshot.val() || {};
-        dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        db.ref("announcements").on("value", snapshot => {
+          const data = snapshot.val() || {};
+          dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+          renderAnnouncements();
+        });
+
+        db.ref("tasks").on("value", snapshot => {
+          const data = snapshot.val() || {};
+          dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+          renderTasks();
+        });
+
+        db.ref("gallery").on("value", snapshot => {
+          const data = snapshot.val() || {};
+          dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+          renderGallery();
+        });
+      } catch (err) {
+        console.error("Firebase Database Error:", err);
         renderAnnouncements();
-      });
-
-      // Listener Tugas
-      db.ref("tasks").on("value", snapshot => {
-        const data = snapshot.val() || {};
-        dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         renderTasks();
-      });
-
-      // Listener Galeri
-      db.ref("gallery").on("value", snapshot => {
-        const data = snapshot.val() || {};
-        dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         renderGallery();
-      });
+      }
     }
 
-    // 5. ACTIONS
+    // 5. CRUD ACTIONS
     function deleteAnnouncement(id) {
       if (confirm("Hapus pengumuman ini?")) {
         firebase.database().ref("announcements/" + id).remove()
@@ -344,24 +351,22 @@
       }
     }
 
-    // 6. INITIAL SETUP
-    document.addEventListener("DOMContentLoaded", () => {
-      // Verifikasi Auth Login
+    // 6. INITIALIZATION
+    window.addEventListener("DOMContentLoaded", () => {
+      // Verifikasi Auth
       if (!checkAuth()) return;
-
-      // Start timer inaktivitas
       resetInactivityTimer();
 
       // Logout Button
       const logoutBtn = document.getElementById("logoutBtn");
       if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => logoutAdmin("Berhasil keluar."));
+        logoutBtn.onclick = () => logoutAdmin("Berhasil keluar.");
       }
 
       // Tombol Buat Pengumuman
       const addAnnBtn = document.getElementById("addAnnouncementBtn");
       if (addAnnBtn) {
-        addAnnBtn.addEventListener("click", () => {
+        addAnnBtn.onclick = () => {
           const title = prompt("Masukkan Judul Pengumuman:");
           if (!title) return;
           const body = prompt("Masukkan Isi Pengumuman:");
@@ -370,14 +375,16 @@
           if (typeof firebase !== "undefined" && firebase.apps.length) {
             firebase.database().ref("announcements").push({ title, body, date })
               .then(() => showToast("Pengumuman berhasil dibuat!"));
+          } else {
+            alert("Koneksi Firebase belum siap!");
           }
-        });
+        };
       }
 
       // Tombol Tambah Tugas
       const addTaskBtn = document.getElementById("addTaskBtn");
       if (addTaskBtn) {
-        addTaskBtn.addEventListener("click", () => {
+        addTaskBtn.onclick = () => {
           const subject = prompt("Mata Pelajaran (contoh: PKN, MTK):");
           if (!subject) return;
           const title = prompt("Judul Tugas/Ujian:");
@@ -388,25 +395,29 @@
             firebase.database().ref("tasks").push({
               subject, title, desc, deadline, status: "berjalan"
             }).then(() => showToast("Tugas berhasil ditambahkan!"));
+          } else {
+            alert("Koneksi Firebase belum siap!");
           }
-        });
+        };
       }
 
       // Tombol Tambah Foto
       const addGalBtn = document.getElementById("addGalleryBtn");
       if (addGalBtn) {
-        addGalBtn.addEventListener("click", () => {
+        addGalBtn.onclick = () => {
           const url = prompt("Masukkan URL Gambar/Foto:");
           if (!url) return;
 
           if (typeof firebase !== "undefined" && firebase.apps.length) {
             firebase.database().ref("gallery").push({ url })
               .then(() => showToast("Foto berhasil ditambahkan!"));
+          } else {
+            alert("Koneksi Firebase belum siap!");
           }
-        });
+        };
       }
 
-      // Load data Firebase
+      // Inisialisasi Data
       initFirebaseData();
     });
   </script>
