@@ -1,5 +1,5 @@
 /* =========================================================
-   Admin Panel Script + Auto Logout & Firebase Realtime DB
+   Admin Panel Script + Auto Logout & Safe Firebase Handler
    ========================================================= */
 
 // 1. CEK AUTHENTICATION (Sesi Login)
@@ -13,9 +13,8 @@ function checkAuth() {
   return true;
 }
 
-if (!checkAuth()) {
-  throw new Error("Unauthorized access");
-}
+// Cek Auth Saat Script Dimuat
+checkAuth();
 
 // 2. FITUR AUTO LOGOUT INACTIVITY (15 Menit)
 const INACTIVE_TIMEOUT = 15 * 60 * 1000;
@@ -40,7 +39,7 @@ function logoutAdmin(message) {
   window.location.href = "../../index.html";
 }
 
-// 4. HELPER FUNCTIONS & ESCAPING
+// 4. HELPER FUNCTIONS
 function escapeHTML(str) {
   if (!str) return "";
   return String(str)
@@ -64,38 +63,11 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 3000);
 }
 
-// 5. FIREBASE REALTIME LISTENERS & RENDER
+// 5. GLOBAL DATA & RENDER FUNCTIONS
 let dbAnnouncements = [];
 let dbTasks = [];
 let dbGallery = [];
 
-function initFirebaseData() {
-  if (typeof firebase === "undefined" || !firebase.apps.length) return;
-  const db = firebase.database();
-
-  // Load Pengumuman
-  db.ref("announcements").on("value", snapshot => {
-    const data = snapshot.val() || {};
-    dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    renderAnnouncements();
-  });
-
-  // Load Tugas
-  db.ref("tasks").on("value", snapshot => {
-    const data = snapshot.val() || {};
-    dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    renderTasks();
-  });
-
-  // Load Galeri
-  db.ref("gallery").on("value", snapshot => {
-    const data = snapshot.val() || {};
-    dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    renderGallery();
-  });
-}
-
-// 6. RENDER FUNCTIONS
 function renderAnnouncements() {
   const list = document.getElementById("adminAnnouncementList");
   if (!list) return;
@@ -108,9 +80,9 @@ function renderAnnouncements() {
   list.innerHTML = dbAnnouncements.map(a => `
     <div class="admin-card">
       <div>
-        <strong style="font-family: var(--font-display); font-size: 1rem; color: var(--on-surface); display: block; margin-bottom: 0.3rem;">${escapeHTML(a.title)}</strong>
-        <p style="color: var(--on-surface-variant); font-size: 0.9rem; margin-bottom: 0.5rem;">${escapeHTML(a.body || "")}</p>
-        <span style="font-size: 0.75rem; color: var(--on-surface-variant); font-weight: 600;">${escapeHTML(a.date || "")}</span>
+        <strong style="font-family: var(--font-display, sans-serif); font-size: 1rem; color: var(--on-surface, #000); display: block; margin-bottom: 0.3rem;">${escapeHTML(a.title)}</strong>
+        <p style="color: var(--on-surface-variant, #555); font-size: 0.9rem; margin-bottom: 0.5rem;">${escapeHTML(a.body || "")}</p>
+        <span style="font-size: 0.75rem; color: var(--on-surface-variant, #777); font-weight: 600;">${escapeHTML(a.date || "")}</span>
       </div>
       <button class="btn-danger-sm" onclick="deleteAnnouncement('${a.id}')">Hapus</button>
     </div>
@@ -164,6 +136,44 @@ function renderGallery() {
   `).join("");
 }
 
+// 6. FIREBASE REALTIME LISTENERS
+function initFirebaseData() {
+  if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) {
+    console.warn("Firebase belum terinisialisasi dengan benar.");
+    renderAnnouncements();
+    renderTasks();
+    renderGallery();
+    return;
+  }
+
+  try {
+    const db = firebase.database();
+
+    // Load Pengumuman
+    db.ref("announcements").on("value", snapshot => {
+      const data = snapshot.val() || {};
+      dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+      renderAnnouncements();
+    }, err => console.error(err));
+
+    // Load Tugas
+    db.ref("tasks").on("value", snapshot => {
+      const data = snapshot.val() || {};
+      dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+      renderTasks();
+    }, err => console.error(err));
+
+    // Load Galeri
+    db.ref("gallery").on("value", snapshot => {
+      const data = snapshot.val() || {};
+      dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+      renderGallery();
+    }, err => console.error(err));
+  } catch (e) {
+    console.error("Firebase Error:", e);
+  }
+}
+
 // 7. ACTION CRUD FUNCTIONS
 function deleteAnnouncement(id) {
   if (confirm("Hapus pengumuman ini?")) {
@@ -192,14 +202,15 @@ function deleteGalleryItem(id) {
   }
 }
 
-// 8. EVENT LISTENERS
+// 8. EVENT LISTENERS SETUP
 document.addEventListener("DOMContentLoaded", () => {
+  // Tombol Logout
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => logoutAdmin("Berhasil keluar dari Admin Panel."));
   }
 
-  // Tambah Pengumuman Prompt
+  // Tambah Pengumuman
   const addAnnBtn = document.getElementById("addAnnouncementBtn");
   if (addAnnBtn) {
     addAnnBtn.addEventListener("click", () => {
@@ -208,12 +219,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const body = prompt("Masukkan Isi Pengumuman:");
       const date = new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' });
 
-      firebase.database().ref("announcements").push({ title, body, date })
-        .then(() => showToast("Pengumuman berhasil dibuat!"));
+      if (typeof firebase !== "undefined" && firebase.apps.length) {
+        firebase.database().ref("announcements").push({ title, body, date })
+          .then(() => showToast("Pengumuman berhasil dibuat!"));
+      }
     });
   }
 
-  // Tambah Tugas Prompt
+  // Tambah Tugas
   const addTaskBtn = document.getElementById("addTaskBtn");
   if (addTaskBtn) {
     addTaskBtn.addEventListener("click", () => {
@@ -223,23 +236,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const desc = prompt("Deskripsi Ringkas:");
       const deadline = prompt("Tenggat Waktu (contoh: 2026-07-31):");
 
-      firebase.database().ref("tasks").push({
-        subject, title, desc, deadline, status: "berjalan"
-      }).then(() => showToast("Tugas berhasil ditambahkan!"));
+      if (typeof firebase !== "undefined" && firebase.apps.length) {
+        firebase.database().ref("tasks").push({
+          subject, title, desc, deadline, status: "berjalan"
+        }).then(() => showToast("Tugas berhasil ditambahkan!"));
+      }
     });
   }
 
-  // Tambah Foto Prompt
+  // Tambah Foto
   const addGalBtn = document.getElementById("addGalleryBtn");
   if (addGalBtn) {
     addGalBtn.addEventListener("click", () => {
       const url = prompt("Masukkan URL Gambar/Foto:");
       if (!url) return;
 
-      firebase.database().ref("gallery").push({ url })
-        .then(() => showToast("Foto berhasil ditambahkan!"));
+      if (typeof firebase !== "undefined" && firebase.apps.length) {
+        firebase.database().ref("gallery").push({ url })
+          .then(() => showToast("Foto berhasil ditambahkan!"));
+      }
     });
   }
 
+  // Inisialisasi Firebase & Data
   initFirebaseData();
 });
