@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Jika sudah login, langsung lempar ke admin panel
   if (sessionStorage.getItem("adminAuth") === "true") {
     window.location.href = "../adminpanel/";
     return;
