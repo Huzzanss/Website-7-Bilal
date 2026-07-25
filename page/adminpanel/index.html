@@ -108,9 +108,7 @@
         </div>
         <button id="addAnnouncementBtn" class="btn btn-primary">+ Buat Pengumuman</button>
       </div>
-      <div class="announcement-list" id="adminAnnouncementList">
-        <p class="empty-note">Memuat data pengumuman...</p>
-      </div>
+      <div class="announcement-list" id="adminAnnouncementList"></div>
     </section>
 
     <!-- TUGAS & UJIAN -->
@@ -122,9 +120,7 @@
         </div>
         <button id="addTaskBtn" class="btn btn-primary">+ Tambah Tugas</button>
       </div>
-      <div class="task-list" id="adminTaskList">
-        <p class="empty-note">Memuat data tugas...</p>
-      </div>
+      <div class="task-list" id="adminTaskList"></div>
     </section>
 
     <!-- GALERI -->
@@ -136,290 +132,19 @@
         </div>
         <button id="addGalleryBtn" class="btn btn-primary">+ Tambah Foto</button>
       </div>
-      <div class="gallery-grid" id="adminGalleryGrid">
-        <div class="gallery-empty">Memuat galeri...</div>
-      </div>
+      <div class="gallery-grid" id="adminGalleryGrid"></div>
     </section>
 
   </main>
 
   <div class="toast" id="toast"></div>
 
-  <!-- Firebase CDN SDK -->
+  <!-- Firebase Client SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
-  <!-- AMAN: Coba load firebase-config external, jika gagal pakai fallback/try-catch -->
+  
+  <!-- Path Ke Firebase Config -->
   <script src="../../firebase-config.js"></script>
-
-  <!-- ALL IN ONE SCRIPT -->
-  <script>
-    // 1. HELPER FUNCTIONS
-    function escapeHTML(str) {
-      if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function escapeAttr(str) {
-      if (!str) return "";
-      return String(str).replace(/"/g, "&quot;");
-    }
-
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      if (!toast) return;
-      toast.textContent = message;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
-    }
-
-    // 2. CEK LOGIN & AUTO LOGOUT
-    function checkAuth() {
-      try {
-        const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
-        if (!isLoggedIn || isLoggedIn !== "true") {
-          alert("Silakan login sebagai admin terlebih dahulu!");
-          window.location.href = "../../index.html";
-          return false;
-        }
-      } catch (e) {
-        console.warn("SessionStorage Error:", e);
-      }
-      return true;
-    }
-
-    function logoutAdmin(msg) {
-      try { sessionStorage.removeItem("adminLoggedIn"); } catch(e){}
-      if (msg) alert(msg);
-      window.location.href = "../../index.html";
-    }
-
-    // Timer Inaktivitas 15 Menit
-    let inactivityTimer;
-    function resetInactivityTimer() {
-      clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => {
-        logoutAdmin("Sesi telah berakhir karena tidak ada aktivitas selama 15 menit.");
-      }, 15 * 60 * 1000);
-    }
-
-    ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
-      window.addEventListener(evt, resetInactivityTimer);
-    });
-
-    // 3. RENDER FUNCTIONS
-    let dbAnnouncements = [];
-    let dbTasks = [];
-    let dbGallery = [];
-
-    function renderAnnouncements() {
-      const list = document.getElementById("adminAnnouncementList");
-      if (!list) return;
-
-      if (!dbAnnouncements || !dbAnnouncements.length) {
-        list.innerHTML = `<p class="empty-note">Belum ada pengumuman.</p>`;
-        return;
-      }
-
-      list.innerHTML = dbAnnouncements.map(a => `
-        <div class="admin-card">
-          <div>
-            <strong style="font-family: var(--font-display, sans-serif); font-size: 1rem; color: var(--on-surface, #000); display: block; margin-bottom: 0.3rem;">${escapeHTML(a.title)}</strong>
-            <p style="color: var(--on-surface-variant, #555); font-size: 0.9rem; margin-bottom: 0.5rem;">${escapeHTML(a.body || "")}</p>
-            <span style="font-size: 0.75rem; color: var(--on-surface-variant, #777); font-weight: 600;">${escapeHTML(a.date || "")}</span>
-          </div>
-          <button class="btn-danger-sm" onclick="deleteAnnouncement('${a.id}')">Hapus</button>
-        </div>
-      `).join("");
-    }
-
-    function renderTasks() {
-      const list = document.getElementById("adminTaskList");
-      if (!list) return;
-
-      if (!dbTasks || !dbTasks.length) {
-        list.innerHTML = `<p class="empty-note">Belum ada tugas/ujian.</p>`;
-        return;
-      }
-
-      list.innerHTML = dbTasks.map(t => `
-        <div class="task-card">
-          <div class="task-top">
-            <span class="task-subject">${escapeHTML(t.subject)}</span>
-            <span class="status-pill ${t.status}">${t.status === "selesai" ? "Selesai" : "Berjalan"}</span>
-          </div>
-          <div class="task-title">${escapeHTML(t.title)}</div>
-          <div class="task-desc">${escapeHTML(t.desc || "")}</div>
-          <div class="task-foot">
-            <span class="deadline">Tenggat: ${escapeHTML(t.deadline || "")}</span>
-            <div class="action-group">
-              <button class="btn btn-secondary" style="min-height:32px; padding: 0.3rem 0.6rem; font-size: 0.78rem;" onclick="toggleTaskStatus('${t.id}', '${t.status}')">
-                ${t.status === "selesai" ? "Buka Lagi" : "Tandai Selesai"}
-              </button>
-              <button class="btn-danger-sm" onclick="deleteTask('${t.id}')">Hapus</button>
-            </div>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    function renderGallery() {
-      const grid = document.getElementById("adminGalleryGrid");
-      if (!grid) return;
-
-      if (!dbGallery || !dbGallery.length) {
-        grid.innerHTML = `<div class="gallery-empty">Belum ada foto kegiatan.</div>`;
-        return;
-      }
-
-      grid.innerHTML = dbGallery.map(g => `
-        <div class="admin-gallery-card">
-          <img src="${escapeAttr(g.url)}" alt="Dokumentasi kelas" loading="lazy">
-          <button class="btn-delete-img" onclick="deleteGalleryItem('${g.id}')">&times;</button>
-        </div>
-      `).join("");
-    }
-
-    // 4. FIREBASE LISTENERS (SAFE)
-    function initFirebaseData() {
-      if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) {
-        console.error("Firebase tidak terdeteksi. Periksa file firebase-config.js.");
-        renderAnnouncements();
-        renderTasks();
-        renderGallery();
-        return;
-      }
-
-      try {
-        const db = firebase.database();
-
-        db.ref("announcements").on("value", snapshot => {
-          const data = snapshot.val() || {};
-          dbAnnouncements = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-          renderAnnouncements();
-        });
-
-        db.ref("tasks").on("value", snapshot => {
-          const data = snapshot.val() || {};
-          dbTasks = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-          renderTasks();
-        });
-
-        db.ref("gallery").on("value", snapshot => {
-          const data = snapshot.val() || {};
-          dbGallery = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-          renderGallery();
-        });
-      } catch (err) {
-        console.error("Firebase Database Error:", err);
-        renderAnnouncements();
-        renderTasks();
-        renderGallery();
-      }
-    }
-
-    // 5. CRUD ACTIONS
-    function deleteAnnouncement(id) {
-      if (confirm("Hapus pengumuman ini?")) {
-        firebase.database().ref("announcements/" + id).remove()
-          .then(() => showToast("Pengumuman berhasil dihapus"));
-      }
-    }
-
-    function deleteTask(id) {
-      if (confirm("Hapus tugas ini?")) {
-        firebase.database().ref("tasks/" + id).remove()
-          .then(() => showToast("Tugas berhasil dihapus"));
-      }
-    }
-
-    function toggleTaskStatus(id, currentStatus) {
-      const newStatus = currentStatus === "selesai" ? "berjalan" : "selesai";
-      firebase.database().ref("tasks/" + id).update({ status: newStatus })
-        .then(() => showToast("Status tugas diperbarui"));
-    }
-
-    function deleteGalleryItem(id) {
-      if (confirm("Hapus foto ini dari galeri?")) {
-        firebase.database().ref("gallery/" + id).remove()
-          .then(() => showToast("Foto berhasil dihapus"));
-      }
-    }
-
-    // 6. INITIALIZATION
-    window.addEventListener("DOMContentLoaded", () => {
-      // Verifikasi Auth
-      if (!checkAuth()) return;
-      resetInactivityTimer();
-
-      // Logout Button
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn) {
-        logoutBtn.onclick = () => logoutAdmin("Berhasil keluar.");
-      }
-
-      // Tombol Buat Pengumuman
-      const addAnnBtn = document.getElementById("addAnnouncementBtn");
-      if (addAnnBtn) {
-        addAnnBtn.onclick = () => {
-          const title = prompt("Masukkan Judul Pengumuman:");
-          if (!title) return;
-          const body = prompt("Masukkan Isi Pengumuman:");
-          const date = new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' });
-
-          if (typeof firebase !== "undefined" && firebase.apps.length) {
-            firebase.database().ref("announcements").push({ title, body, date })
-              .then(() => showToast("Pengumuman berhasil dibuat!"));
-          } else {
-            alert("Koneksi Firebase belum siap!");
-          }
-        };
-      }
-
-      // Tombol Tambah Tugas
-      const addTaskBtn = document.getElementById("addTaskBtn");
-      if (addTaskBtn) {
-        addTaskBtn.onclick = () => {
-          const subject = prompt("Mata Pelajaran (contoh: PKN, MTK):");
-          if (!subject) return;
-          const title = prompt("Judul Tugas/Ujian:");
-          const desc = prompt("Deskripsi Ringkas:");
-          const deadline = prompt("Tenggat Waktu (contoh: 2026-07-31):");
-
-          if (typeof firebase !== "undefined" && firebase.apps.length) {
-            firebase.database().ref("tasks").push({
-              subject, title, desc, deadline, status: "berjalan"
-            }).then(() => showToast("Tugas berhasil ditambahkan!"));
-          } else {
-            alert("Koneksi Firebase belum siap!");
-          }
-        };
-      }
-
-      // Tombol Tambah Foto
-      const addGalBtn = document.getElementById("addGalleryBtn");
-      if (addGalBtn) {
-        addGalBtn.onclick = () => {
-          const url = prompt("Masukkan URL Gambar/Foto:");
-          if (!url) return;
-
-          if (typeof firebase !== "undefined" && firebase.apps.length) {
-            firebase.database().ref("gallery").push({ url })
-              .then(() => showToast("Foto berhasil ditambahkan!"));
-          } else {
-            alert("Koneksi Firebase belum siap!");
-          }
-        };
-      }
-
-      // Inisialisasi Data
-      initFirebaseData();
-    });
-  </script>
+  <script src="admin.js"></script>
 </body>
 </html>
