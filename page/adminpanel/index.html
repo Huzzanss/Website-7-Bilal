@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Custom Styling Tambahan Khusus Admin */
-    .admin-card {
+    /* Custom CSS tambahan khusus tampilan Admin Card & Galeri */
+    .admin-card-item {
       background: #ffffff;
       border: 1px solid var(--outline, #D8DFEA);
       border-radius: var(--radius-lg, 1rem);
@@ -53,7 +53,7 @@
       height: 100%;
       object-fit: cover;
     }
-    .admin-gallery-card .btn-delete-img {
+    .admin-gallery-card .delete-img-btn {
       position: absolute;
       top: 8px;
       right: 8px;
@@ -70,12 +70,6 @@
       justify-content: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-
-    .action-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
   </style>
 </head>
 <body>
@@ -84,15 +78,15 @@
   <header class="site-header">
     <div class="container header-inner">
       <a href="../../index.html" class="brand">
-        <span class="brand-badge">VII</span>
+        <span class="brand-badge" id="brandBadge">VII</span>
         <span class="brand-text">
           <strong>Admin Panel</strong>
           <small>Kelas VII Bilal bin Rabbah</small>
         </span>
       </a>
-      <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <a href="../../index.html" class="btn btn-secondary" style="font-size: 0.82rem;">← Web Utama</a>
-        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; font-size: 0.82rem;">Keluar Admin</button>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <a href="../../index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">← Web Utama</a>
+        <button id="logoutBtn" class="btn btn-primary" style="background: #DC2626; border-color: #DC2626; padding: 0.5rem 1rem; font-size: 0.85rem;">Keluar Admin</button>
       </div>
     </div>
   </header>
@@ -100,7 +94,7 @@
   <!-- MAIN CONTENT -->
   <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
 
-    <!-- PENGUMUMAN -->
+    <!-- MANAJEMEN PENGUMUMAN -->
     <section class="section" style="padding: 1rem 0 2rem;">
       <div class="section-head">
         <div>
@@ -112,7 +106,7 @@
       <div class="announcement-list" id="adminAnnouncementList"></div>
     </section>
 
-    <!-- TUGAS & UJIAN -->
+    <!-- MANAJEMEN TUGAS & UJIAN -->
     <section class="section" style="padding: 2rem 0;">
       <div class="section-head">
         <div>
@@ -124,7 +118,7 @@
       <div class="task-list" id="adminTaskList"></div>
     </section>
 
-    <!-- GALERI -->
+    <!-- MANAJEMEN GALERI -->
     <section class="section" style="padding: 2rem 0;">
       <div class="section-head">
         <div>
@@ -140,14 +134,10 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- FIREBASE SDK COMPAT (Wajib Ditaruh Sebelum admin.js) -->
+  <!-- Firebase Client SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  
-  <!-- File Config Firebase Kamu -->
   <script src="../../firebase-config.js"></script>
-  
-  <!-- Script Admin Main Logic -->
   <script src="admin.js"></script>
 </body>
 </html>
