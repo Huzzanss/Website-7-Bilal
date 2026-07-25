@@ -4,39 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa</title>
-<meta name="description" content="Website resmi Kelas VII Bilal bin Rabbah, SMP Islam Bunga Bangsa. Papan pengumuman, jadwal pelajaran, daftar tugas & ujian, daftar siswa, dan galeri foto kelas — terbuka untuk siswa, guru, dan wali murid tanpa perlu login.">
-<meta name="robots" content="index, follow">
-<meta name="google-site-verification" content="7CBpBDhsxJ1uI6EKca64t76RsGOADAtf93byh9VOtHE" />
-<link rel="canonical" href="https://vii-bilal.vercel.app/">
-
-<!-- Open Graph (tampilan saat link dibagikan di WhatsApp/Facebook/dll) -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa">
-<meta property="og:description" content="Papan pengumuman, jadwal pelajaran, tugas & ujian, daftar siswa, dan galeri foto Kelas VII Bilal bin Rabbah — terbuka untuk semua tanpa login.">
-<meta property="og:url" content="https://vii-bilal.vercel.app/">
-<meta property="og:locale" content="id_ID">
-<meta property="og:image" content="https://vii-bilal.vercel.app/logo-kelas.png">
-
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa">
-<meta name="twitter:description" content="Papan pengumuman, jadwal pelajaran, tugas & ujian, daftar siswa, dan galeri foto Kelas VII Bilal bin Rabbah.">
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
-  "name": "Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa",
-  "url": "https://vii-bilal.vercel.app/",
-  "description": "Website informasi terbuka Kelas VII Bilal bin Rabbah, SMP Islam Bunga Bangsa: pengumuman, jadwal pelajaran, tugas & ujian, daftar siswa, dan galeri foto kelas.",
-  "parentOrganization": {
-    "@type": "School",
-    "name": "SMP Islam Bunga Bangsa"
-  }
-}
-</script>
-
+<meta name="description" content="Website resmi Kelas VII Bilal bin Rabbah, SMP Islam Bunga Bangsa.">
 <link rel="icon" type="image/png" sizes="32x32" href="logo-kelas.png">
-<link rel="shortcut icon" href="logo-kelas.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -62,6 +31,7 @@
       <a href="#tugas" data-nav>Tugas &amp; Ujian</a>
       <a href="#siswa" data-nav>Siswa</a>
       <a href="#galeri" data-nav>Galeri</a>
+      <a href="admin.html" style="background: var(--primary); color: #fff; border-radius: var(--radius-sm); margin-left: 0.5rem;">Admin Panel</a>
     </nav>
   </div>
 </header>
@@ -74,17 +44,14 @@
       <div class="hero-text">
         <p class="eyebrow">Ruang informasi terbuka kelas</p>
         <h1>Selamat Datang di Kelas VII Bilal bin Rabbah</h1>
-        <p class="hero-sub">Semua siswa, guru, dan wali murid bisa langsung melihat serta menambahkan informasi di sini — tanpa perlu login atau akun.</p>
+        <p class="hero-sub">Pusat informasi kegiatan, jadwal, tugas, dan foto dokumentasi kelas.</p>
       </div>
 
       <div class="announcement-board" id="announcementBoard">
         <div class="board-head">
           <h2><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.5 5 10 5 10s5-6.5 5-10a5 5 0 0 0-5-5Z"/><circle cx="12" cy="7" r="1.6"/></svg></span> Papan Pengumuman</h2>
-          <button class="btn btn-primary" id="btnAddAnnouncement">+ Buat Pengumuman</button>
         </div>
-        <div class="announcement-list" id="announcementList">
-          <!-- diisi oleh app.js -->
-        </div>
+        <div class="announcement-list" id="announcementList"></div>
       </div>
 
       <div class="quick-links">
@@ -101,7 +68,7 @@
         <a href="#siswa" class="quick-card">
           <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 11.7v4.3c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4.3"/><path d="M21 9.5v5.5"/></svg></span>
           <span class="quick-title">Daftar Siswa</span>
-          <span class="quick-desc">16 + 2 siswa &amp; wali kelas</span>
+          <span class="quick-desc">Daftar siswa &amp; wali kelas</span>
         </a>
         <a href="#galeri" class="quick-card">
           <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="m4 18 5-5 3 3 4-4.5 4 4.5"/></svg></span>
@@ -121,8 +88,6 @@
           <h2>Jadwal Pelajaran</h2>
         </div>
       </div>
-      <p class="section-desc">Jadwal ini diatur langsung lewat kode (<code>app.js</code>) oleh admin/wali kelas, sehingga tidak ada tombol tambah/ubah di halaman ini.</p>
-
       <div class="schedule-tabs" id="scheduleTabs"></div>
       <div class="schedule-wrap" id="scheduleWrap"></div>
     </div>
@@ -136,7 +101,6 @@
           <p class="eyebrow">Deadline &amp; agenda</p>
           <h2>Daftar Tugas &amp; Ujian</h2>
         </div>
-        <button class="btn btn-primary" id="btnAddTask">+ Tambah Tugas</button>
       </div>
 
       <div class="filter-row" id="filterRow">
@@ -158,9 +122,7 @@
           <h2>Wali Kelas &amp; Daftar Siswa</h2>
         </div>
       </div>
-
       <div class="teacher-card" id="teacherCard"></div>
-
       <div class="student-list" id="studentList"></div>
     </div>
   </section>
@@ -173,10 +135,6 @@
           <p class="eyebrow">Dokumentasi kegiatan</p>
           <h2>Galeri Foto Kelas</h2>
         </div>
-        <label class="btn btn-primary btn-upload">
-          + Unggah Foto
-          <input type="file" id="galleryInput" accept="image/*" multiple hidden>
-        </label>
       </div>
       <div class="gallery-grid" id="galleryGrid"></div>
     </div>
@@ -186,32 +144,13 @@
 
 <footer class="site-footer">
   <div class="container">
-    <p>Website Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa. Dibuat terbuka untuk seluruh siswa, guru, dan wali murid.</p>
+    <p>Website Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa.</p>
   </div>
 </footer>
 
-<!-- FAB mobile quick add -->
-<button class="fab" id="fab" aria-label="Tambah cepat">+</button>
-<div class="fab-menu" id="fabMenu">
-  <button data-action="announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.5 5 10 5 10s5-6.5 5-10a5 5 0 0 0-5-5Z"/><circle cx="12" cy="7" r="1.6"/></svg> Pengumuman</button>
-  <button data-action="task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.2c0-.7.5-1.2 1.2-1.2H11a1 1 0 0 1 1 1v16"/><path d="M12 4.8h7.8c.7 0 1.2.5 1.2 1.2v13.5"/><path d="M4 19.5c0 1 .8 1.5 1.5 1.5H20"/></svg> Tugas</button>
-  <button data-action="gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="m4 18 5-5 3 3 4-4.5 4 4.5"/></svg> Foto</button>
-</div>
-
-<!-- ===== MODAL (dipakai ulang untuk semua form) ===== -->
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal-head">
-      <h3 id="modalTitle">Judul</h3>
-      <button class="modal-close" id="modalClose" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
-<!-- Firebase (compat SDK, mudah dipakai tanpa build tool) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
