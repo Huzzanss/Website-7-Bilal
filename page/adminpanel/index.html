@@ -9,9 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <style>
-    /* Styling Khusus Admin Panel */
+    /* Admin Panel Layout Tweaks */
     .admin-card {
-      background: var(--surface, #ffffff);
+      background: #ffffff;
       border: 1px solid var(--outline, #D8DFEA);
       border-radius: var(--radius-lg, 1rem);
       padding: 1.1rem;
@@ -20,6 +20,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 1rem;
+      margin-bottom: 0.8rem;
     }
 
     .btn-danger-sm {
@@ -108,7 +109,9 @@
         </div>
         <button id="addAnnouncementBtn" class="btn btn-primary">+ Buat Pengumuman</button>
       </div>
-      <div class="announcement-list" id="adminAnnouncementList"></div>
+      <div class="announcement-list" id="adminAnnouncementList">
+        <p class="empty-note">Memuat data pengumuman...</p>
+      </div>
     </section>
 
     <!-- TUGAS & UJIAN -->
@@ -120,7 +123,9 @@
         </div>
         <button id="addTaskBtn" class="btn btn-primary">+ Tambah Tugas</button>
       </div>
-      <div class="task-list" id="adminTaskList"></div>
+      <div class="task-list" id="adminTaskList">
+        <p class="empty-note">Memuat data tugas...</p>
+      </div>
     </section>
 
     <!-- GALERI -->
@@ -132,7 +137,9 @@
         </div>
         <button id="addGalleryBtn" class="btn btn-primary">+ Tambah Foto</button>
       </div>
-      <div class="gallery-grid" id="adminGalleryGrid"></div>
+      <div class="gallery-grid" id="adminGalleryGrid">
+        <div class="gallery-empty">Memuat galeri...</div>
+      </div>
     </section>
 
   </main>
