@@ -139,6 +139,7 @@ db.ref("announcements").on("value", (snap) => {
 
 function renderAnnouncements(){
   const list = document.getElementById("announcementList");
+  if (!list) return;
   if (!announcements.length){
     list.innerHTML = `<p class="empty-note">Belum ada pengumuman.</p>`;
     return;
@@ -157,6 +158,7 @@ function renderAnnouncements(){
 /* JADWAL */
 function renderScheduleTabs(){
   const tabs = document.getElementById("scheduleTabs");
+  if (!tabs) return;
   tabs.innerHTML = DAYS.map(d => `
     <button class="${d === activeDay ? "active" : ""}" data-day="${d}">${d}</button>
   `).join("");
@@ -171,6 +173,7 @@ function renderScheduleTabs(){
 
 function renderSchedule(){
   const wrap = document.getElementById("scheduleWrap");
+  if (!wrap) return;
   const rows = SCHEDULE[activeDay] || [];
   if (!rows.length){
     wrap.innerHTML = `<p class="empty-note" style="padding:1rem;">Belum ada jadwal untuk hari ${activeDay}.</p>`;
@@ -195,6 +198,7 @@ db.ref("tasks").on("value", (snap) => {
 
 function renderTasks(){
   const list = document.getElementById("taskList");
+  if (!list) return;
   let items = tasks.slice();
   if (activeFilter !== "semua") items = items.filter(t => t.status === activeFilter);
 
@@ -220,14 +224,17 @@ function renderTasks(){
   `).join("");
 }
 
-document.getElementById("filterRow").addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-filter]");
-  if (!btn) return;
-  activeFilter = btn.getAttribute("data-filter");
-  document.querySelectorAll("#filterRow .chip").forEach(c => c.classList.remove("active"));
-  btn.classList.add("active");
-  renderTasks();
-});
+const filterRow = document.getElementById("filterRow");
+if (filterRow) {
+  filterRow.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-filter]");
+    if (!btn) return;
+    activeFilter = btn.getAttribute("data-filter");
+    document.querySelectorAll("#filterRow .chip").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    renderTasks();
+  });
+}
 
 /* SISWA & WALI KELAS */
 function avatarInnerHTML(name, photo){
@@ -239,6 +246,7 @@ function avatarInnerHTML(name, photo){
 
 function renderTeacher(){
   const el = document.getElementById("teacherCard");
+  if (!el) return;
   el.innerHTML = `
     <span class="avatar" style="width:64px;height:64px;font-size:1.15rem;">${avatarInnerHTML(TEACHER.name, TEACHER.photo)}</span>
     <div>
@@ -250,6 +258,7 @@ function renderTeacher(){
 
 function renderStudents(){
   const list = document.getElementById("studentList");
+  if (!list) return;
   list.innerHTML = STUDENTS.map((s, i) => `
     <div class="student-item">
       <span class="avatar-wrap">
@@ -274,6 +283,7 @@ db.ref("gallery").on("value", (snap) => {
 
 function renderGallery(){
   const grid = document.getElementById("galleryGrid");
+  if (!grid) return;
   if (!gallery.length){
     grid.innerHTML = `<div class="gallery-empty">Belum ada foto kegiatan.</div>`;
     return;
@@ -288,8 +298,10 @@ function renderGallery(){
 /* NAV & UTIL */
 const navToggle = document.getElementById("navToggle");
 const mainNav = document.getElementById("mainNav");
-navToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
-mainNav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => mainNav.classList.remove("open")));
+if (navToggle && mainNav) {
+  navToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
+  mainNav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => mainNav.classList.remove("open")));
+}
 
 function escapeHTML(str = ""){
   return String(str).replace(/[&<>"']/g, c => ({
@@ -298,24 +310,20 @@ function escapeHTML(str = ""){
 }
 function escapeAttr(str = ""){ return escapeHTML(str); }
 
-/* ===== SHORTCUT RAHASIA: KETIK 'admin' UNTUK PINDAH KE ADMIN PANEL ===== */
+/* ===== SHORTCUT RAHASIA: KETIK 'admin' UNTUK PINDAH KE HALAMAN LOGIN ===== */
 let secretBuffer = "";
 let secretTimer = null;
 
 window.addEventListener("keydown", (e) => {
-  // Biarkan jika user sedang berada di input field/textarea lain jika ada
   if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
 
-  // Rekam huruf yang diketik
   secretBuffer += e.key.toLowerCase();
 
-  // Reset penyimpan teks jika tidak mengetik lagi dalam 1.5 detik
   clearTimeout(secretTimer);
   secretTimer = setTimeout(() => { secretBuffer = ""; }, 1500);
 
-  // Jika teks berakhiran "admin", alihkan ke halaman admin.html
   if (secretBuffer.endsWith("admin")){
-    window.location.href = "admin.html";
+    window.location.href = "page/loginadminpanel/";
   }
 });
 
