@@ -1,38 +1,17 @@
 /* ===== AUTH & SESSION CHECK (RUNS IMMEDIATELY) ===== */
-const MAX_SESSION_MS = 2 * 60 * 60 * 1000; // Hard session limit: 2 hours (matches JWT expiry)
-const API_BASE = "/api";
+const MAX_SESSION_MS = 2 * 60 * 60 * 1000; // Hard session limit: 2 hours
 
 (function checkAuthImmediate() {
-  const token = sessionStorage.getItem("adminToken");
+  const isAuthed = sessionStorage.getItem("adminAuth") === "true";
   const loginTime = parseInt(sessionStorage.getItem("adminLoginTime") || "0", 10);
   const sessionExpired = loginTime && (Date.now() - loginTime > MAX_SESSION_MS);
 
-  if (!token || sessionExpired) {
-    sessionStorage.removeItem("adminToken");
+  if (!isAuthed || sessionExpired) {
+    sessionStorage.removeItem("adminAuth");
     sessionStorage.removeItem("adminLoginTime");
     window.location.href = "../loginadminpanel/" + (sessionExpired ? "?reason=expired" : "");
   }
 })();
-
-/* ===== REST API HELPER (attaches JWT, handles expired sessions) ===== */
-async function apiFetch(path, options = {}) {
-  const token = sessionStorage.getItem("adminToken");
-  const headers = Object.assign({}, options.headers || {});
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  if (!(options.body instanceof FormData) && options.body) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const res = await fetch(API_BASE + path, { ...options, headers });
-
-  if (res.status === 401) {
-    sessionStorage.removeItem("adminToken");
-    sessionStorage.removeItem("adminLoginTime");
-    window.location.href = "../loginadminpanel/?reason=expired";
-    throw new Error("Unauthorized");
-  }
-  return res;
-}
 
 const CLASS_ICON = "../../logo-kelas.png";
 
@@ -80,47 +59,21 @@ function closeModal(id) {
 }
 
 /* ===== LOGOUT ===== */
-function logoutAdmin() {
-  sessionStorage.removeItem("adminToken");
+function logoutAdmin(reason) {
+  logActivity("logout", "Admin keluar" + (reason ? ` (${reason})` : ""));
+  sessionStorage.removeItem("adminAuth");
   sessionStorage.removeItem("adminLoginTime");
-  window.location.href = "../../index.html";
+  setTimeout(() => { window.location.href = "../../index.html"; }, 150);
 }
 
-/* ===== DATA LOADERS (REST API) ===== */
-async function loadAnnouncements() {
-  try {
-    const res = await apiFetch("/announcements");
-    announcements = await res.json();
-    renderAnnouncements();
-  } catch (err) { console.error("Gagal memuat pengumuman:", err); }
-}
-
-async function loadTasks() {
-  try {
-    const res = await apiFetch("/tasks");
-    tasks = await res.json();
-    renderTasks();
-  } catch (err) { console.error("Gagal memuat tugas:", err); }
-}
-
-async function loadGallery() {
-  try {
-    const res = await apiFetch("/gallery");
-    gallery = await res.json();
-    renderGallery();
-  } catch (err) { console.error("Gagal memuat galeri:", err); }
-}
-
-async function loadActivityLog() {
-  try {
-    const res = await apiFetch("/activity-log");
-    activityLog = await res.json();
-    renderActivityLog();
-  } catch (err) { console.error("Gagal memuat log aktivitas:", err); }
-}
-
-async function loadAll() {
-  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog()]);
+/* ===== ACTIVITY LOG ===== */
+function logActivity(action, label) {
+  if (!window.db) return;
+  db.ref("activityLog").push({
+    action,
+    label,
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
 }
 
 function relativeTime(ts) {
@@ -160,6 +113,40 @@ function renderActivityLog() {
     </div>
   `).join("");
 }
+
+/* ===== REALTIME DATA SYNC (FIREBASE) ===== */
+
+db.ref("announcements").on("value", (snap) => {
+  const val = snap.val() || {};
+  announcements = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  renderAnnouncements();
+});
+
+db.ref("tasks").on("value", (snap) => {
+  const val = snap.val() || {};
+  tasks = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
+  renderTasks();
+});
+
+db.ref("gallery").on("value", (snap) => {
+  const val = snap.val() || {};
+  gallery = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  renderGallery();
+});
+
+db.ref("activityLog").limitToLast(30).on("value", (snap) => {
+  const val = snap.val() || {};
+  activityLog = Object.entries(val)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  renderActivityLog();
+});
 
 /* ===== RENDER: PENGUMUMAN ===== */
 function renderAnnouncements() {
@@ -262,7 +249,7 @@ function openEditAnnouncement(id) {
   openModal("announcementModalBackdrop");
 }
 
-async function saveAnnouncement(e) {
+function saveAnnouncement(e) {
   e.preventDefault();
   const titleInput = document.getElementById("announcementTitle");
   const bodyInput = document.getElementById("announcementBody");
@@ -281,25 +268,27 @@ async function saveAnnouncement(e) {
   const saveBtn = document.getElementById("announcementSaveBtn");
   saveBtn.disabled = true;
 
-  try {
-    const isEdit = !!editingAnnouncementId;
-    const res = await apiFetch(isEdit ? `/announcements/${editingAnnouncementId}` : "/announcements", {
-      method: isEdit ? "PUT" : "POST",
-      body: JSON.stringify({ title, body }),
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast(isEdit ? "Pengumuman berhasil diperbarui!" : "Pengumuman berhasil ditambahkan!");
-      closeModal("announcementModalBackdrop");
-      loadAnnouncements();
-      loadActivityLog();
-    } else {
-      showToast(result.message || "Gagal menyimpan pengumuman.");
-    }
-  } catch (err) {
-    // apiFetch already redirects on 401; other errors just get a toast.
-  } finally {
-    saveBtn.disabled = false;
+  if (editingAnnouncementId) {
+    db.ref("announcements/" + editingAnnouncementId).update({ title, body })
+      .then(() => {
+        logActivity("update", `Mengubah pengumuman "${title}"`);
+        showToast("Pengumuman berhasil diperbarui!");
+        closeModal("announcementModalBackdrop");
+      })
+      .finally(() => { saveBtn.disabled = false; });
+  } else {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    db.ref("announcements").push({
+      title, body, date: dateStr,
+      createdAt: firebase.database.ServerValue.TIMESTAMP
+    })
+      .then(() => {
+        logActivity("create", `Membuat pengumuman "${title}"`);
+        showToast("Pengumuman berhasil ditambahkan!");
+        closeModal("announcementModalBackdrop");
+      })
+      .finally(() => { saveBtn.disabled = false; });
   }
 }
 
@@ -308,16 +297,11 @@ function confirmDeleteAnnouncement(id) {
   openConfirmModal(
     "Hapus Pengumuman?",
     `Pengumuman "${a ? a.title : ""}" akan dihapus permanen.`,
-    async () => {
-      const res = await apiFetch(`/announcements/${id}`, { method: "DELETE" });
-      const result = await res.json();
-      if (result.success) {
+    () => {
+      db.ref("announcements/" + id).remove().then(() => {
+        logActivity("delete", `Menghapus pengumuman "${a ? a.title : id}"`);
         showToast("Pengumuman dihapus!");
-        loadAnnouncements();
-        loadActivityLog();
-      } else {
-        showToast(result.message || "Gagal menghapus pengumuman.");
-      }
+      });
     }
   );
 }
@@ -350,7 +334,7 @@ function openEditTask(id) {
   openModal("taskModalBackdrop");
 }
 
-async function saveTask(e) {
+function saveTask(e) {
   e.preventDefault();
   const subjectInput = document.getElementById("taskSubject");
   const titleInput = document.getElementById("taskTitle");
@@ -376,40 +360,36 @@ async function saveTask(e) {
   const saveBtn = document.getElementById("taskSaveBtn");
   saveBtn.disabled = true;
 
-  try {
-    const isEdit = !!editingTaskId;
-    const res = await apiFetch(isEdit ? `/tasks/${editingTaskId}` : "/tasks", {
-      method: isEdit ? "PUT" : "POST",
-      body: JSON.stringify({ subject, title, desc, deadline, status }),
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast(isEdit ? "Tugas berhasil diperbarui!" : "Tugas berhasil ditambahkan!");
-      closeModal("taskModalBackdrop");
-      loadTasks();
-      loadActivityLog();
-    } else {
-      showToast(result.message || "Gagal menyimpan tugas.");
-    }
-  } catch (err) {
-    // apiFetch already redirects on 401
-  } finally {
-    saveBtn.disabled = false;
+  if (editingTaskId) {
+    db.ref("tasks/" + editingTaskId).update({ subject, title, desc, deadline, status })
+      .then(() => {
+        logActivity("update", `Mengubah tugas "${title}"`);
+        showToast("Tugas berhasil diperbarui!");
+        closeModal("taskModalBackdrop");
+      })
+      .finally(() => { saveBtn.disabled = false; });
+  } else {
+    db.ref("tasks").push({
+      subject, title, desc, deadline, status,
+      createdAt: firebase.database.ServerValue.TIMESTAMP
+    })
+      .then(() => {
+        logActivity("create", `Menambah tugas "${title}"`);
+        showToast("Tugas berhasil ditambahkan!");
+        closeModal("taskModalBackdrop");
+      })
+      .finally(() => { saveBtn.disabled = false; });
   }
 }
 
-async function toggleTaskStatus(id, currentStatus) {
-  try {
-    const res = await apiFetch(`/tasks/${id}/status`, { method: "PATCH" });
-    const result = await res.json();
-    if (result.success) {
+function toggleTaskStatus(id, currentStatus) {
+  const newStatus = currentStatus === "selesai" ? "berjalan" : "selesai";
+  db.ref("tasks/" + id).update({ status: newStatus })
+    .then(() => {
+      const t = tasks.find(x => x.id === id);
+      logActivity("update", `Menandai tugas "${t ? t.title : id}" sebagai ${newStatus}`);
       showToast("Status tugas diperbarui!");
-      loadTasks();
-      loadActivityLog();
-    } else {
-      showToast(result.message || "Gagal mengubah status tugas.");
-    }
-  } catch (err) { /* apiFetch already redirects on 401 */ }
+    });
 }
 
 function confirmDeleteTask(id) {
@@ -417,16 +397,11 @@ function confirmDeleteTask(id) {
   openConfirmModal(
     "Hapus Tugas?",
     `Tugas "${t ? t.title : ""}" akan dihapus permanen.`,
-    async () => {
-      const res = await apiFetch(`/tasks/${id}`, { method: "DELETE" });
-      const result = await res.json();
-      if (result.success) {
+    () => {
+      db.ref("tasks/" + id).remove().then(() => {
+        logActivity("delete", `Menghapus tugas "${t ? t.title : id}"`);
         showToast("Tugas dihapus!");
-        loadTasks();
-        loadActivityLog();
-      } else {
-        showToast(result.message || "Gagal menghapus tugas.");
-      }
+      });
     }
   );
 }
@@ -474,10 +449,12 @@ function handleFileSelected(file) {
   reader.readAsDataURL(file);
 }
 
-// Uses XMLHttpRequest (not fetch) because we need real upload progress events
-// for the progress bar, which fetch() does not expose.
 function uploadGalleryPhoto() {
   if (!selectedGalleryFile) return;
+  if (!window.firebase || !firebase.storage) {
+    showToast("Firebase Storage belum tersedia.");
+    return;
+  }
 
   const uploadBtn = document.getElementById("galleryUploadBtn");
   uploadBtn.disabled = true;
@@ -486,48 +463,36 @@ function uploadGalleryPhoto() {
   const progressLabel = document.getElementById("uploadProgressLabel");
   progressWrap.style.display = "block";
 
-  const formData = new FormData();
-  formData.append("photo", selectedGalleryFile);
+  const fileName = `gallery/${Date.now()}_${selectedGalleryFile.name}`;
+  const storageRef = firebase.storage().ref().child(fileName);
+  const uploadTask = storageRef.put(selectedGalleryFile);
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", API_BASE + "/gallery/upload");
-  const token = sessionStorage.getItem("adminToken");
-  if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-
-  xhr.upload.onprogress = (e) => {
-    if (e.lengthComputable) {
-      const pct = Math.round((e.loaded / e.total) * 100);
+  uploadTask.on("state_changed",
+    (snapshot) => {
+      const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
       progressBar.style.width = pct + "%";
       progressLabel.textContent = `Mengunggah... ${pct}%`;
+    },
+    (error) => {
+      showToast("Gagal mengunggah foto: " + error.message);
+      uploadBtn.disabled = false;
+    },
+    () => {
+      uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+        db.ref("gallery").push({
+          url, path: fileName,
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+          logActivity("create", "Menambahkan foto ke galeri");
+          showToast("Foto berhasil diunggah!");
+          closeModal("galleryModalBackdrop");
+        });
+      });
     }
-  };
-
-  xhr.onload = () => {
-    uploadBtn.disabled = false;
-    if (xhr.status === 401) {
-      sessionStorage.removeItem("adminToken");
-      window.location.href = "../loginadminpanel/?reason=expired";
-      return;
-    }
-    let result = {};
-    try { result = JSON.parse(xhr.responseText); } catch (err) { /* ignore parse error */ }
-    if (xhr.status >= 200 && xhr.status < 300 && result.success) {
-      showToast("Foto berhasil diunggah!");
-      closeModal("galleryModalBackdrop");
-      loadGallery();
-      loadActivityLog();
-    } else {
-      showToast(result.message || "Gagal mengunggah foto.");
-    }
-  };
-  xhr.onerror = () => {
-    uploadBtn.disabled = false;
-    showToast("Gagal mengunggah foto (koneksi bermasalah).");
-  };
-  xhr.send(formData);
+  );
 }
 
-async function saveGalleryUrl() {
+function saveGalleryUrl() {
   const input = document.getElementById("galleryUrlInput");
   const error = document.getElementById("galleryUrlError");
   const url = input.value.trim();
@@ -535,37 +500,28 @@ async function saveGalleryUrl() {
   try { new URL(url); } catch (err) { error.textContent = "URL tidak valid."; return; }
   error.textContent = "";
 
-  try {
-    const res = await apiFetch("/gallery/url", {
-      method: "POST",
-      body: JSON.stringify({ url }),
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast("Foto berhasil ditambahkan!");
-      closeModal("galleryModalBackdrop");
-      loadGallery();
-      loadActivityLog();
-    } else {
-      error.textContent = result.message || "Gagal menambahkan foto.";
-    }
-  } catch (err) { /* apiFetch already redirects on 401 */ }
+  db.ref("gallery").push({
+    url, createdAt: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    logActivity("create", "Menambahkan foto ke galeri (URL)");
+    showToast("Foto berhasil ditambahkan!");
+    closeModal("galleryModalBackdrop");
+  });
 }
 
 function confirmDeleteGalleryItem(id) {
+  const g = gallery.find(x => x.id === id);
   openConfirmModal(
     "Hapus Foto?",
     "Foto ini akan dihapus permanen dari galeri.",
-    async () => {
-      const res = await apiFetch(`/gallery/${id}`, { method: "DELETE" });
-      const result = await res.json();
-      if (result.success) {
+    () => {
+      db.ref("gallery/" + id).remove().then(() => {
+        if (g && g.path && firebase.storage) {
+          firebase.storage().ref().child(g.path).delete().catch(() => {});
+        }
+        logActivity("delete", "Menghapus foto galeri");
         showToast("Foto dihapus!");
-        loadGallery();
-        loadActivityLog();
-      } else {
-        showToast(result.message || "Gagal menghapus foto.");
-      }
+      });
     }
   );
 }
@@ -613,7 +569,7 @@ setInterval(() => {
   const idleFor = Date.now() - lastActivityTime;
 
   if (idleFor >= idleLimitMs) {
-    logoutAdmin();
+    logoutAdmin("tidak aktif");
     return;
   }
   if (idleFor >= idleLimitMs - WARNING_BEFORE_MS && !warningShown) {
@@ -642,10 +598,6 @@ function startSessionCountdown(seconds) {
 document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.remove("auth-pending");
   renderBrandBadge();
-  loadAll();
-
-  // Poll periodically so changes from another admin session/tab show up here too.
-  setInterval(loadAll, 15000);
 
   // Theme toggle
   const themeToggle = document.getElementById("themeToggle");
@@ -729,13 +681,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Settings: clear activity log
   document.getElementById("clearLogBtn").addEventListener("click", () => {
-    openConfirmModal("Hapus Log Aktivitas?", "Seluruh riwayat aktivitas akan dihapus permanen.", async () => {
-      const res = await apiFetch("/activity-log", { method: "DELETE" });
-      const result = await res.json();
-      if (result.success) {
-        showToast("Log aktivitas dibersihkan.");
-        loadActivityLog();
-      }
+    openConfirmModal("Hapus Log Aktivitas?", "Seluruh riwayat aktivitas akan dihapus permanen.", () => {
+      db.ref("activityLog").remove().then(() => showToast("Log aktivitas dibersihkan."));
     });
   });
 
