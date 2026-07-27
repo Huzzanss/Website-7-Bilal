@@ -30,8 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Sesi kamu berakhir. Silakan login kembali.");
   }
 
-  // If already logged in with a valid session, go straight to admin panel
-  if (sessionStorage.getItem("adminAuth") === "true") {
+  // If already logged in with a valid token, go straight to admin panel
+  if (sessionStorage.getItem("adminToken")) {
     window.location.href = "../adminpanel/";
     return;
   }
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     submitBtn.textContent = "Memverifikasi...";
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
@@ -122,15 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (result.success) {
         setAttempts(0);
-        sessionStorage.setItem("adminAuth", "true");
+        sessionStorage.setItem("adminToken", result.token);
         sessionStorage.setItem("adminLoginTime", String(Date.now()));
-        if (window.db) {
-          db.ref("activityLog").push({
-            action: "login",
-            label: "Admin berhasil login",
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-          });
-        }
         window.location.href = "../adminpanel/";
       } else {
         const attempts = getAttempts() + 1;

@@ -16,7 +16,10 @@ const app = express();
 
 app.set("trust proxy", 1); // accurate req.ip behind Vercel/Render's proxy
 app.use(cors());
-app.use(express.json());
+// Raised from Express's 100kb default so base64-encoded photo uploads fit
+// (see routes/gallery.js — this avoids multer/multipart, which hangs on
+// Vercel's serverless functions).
+app.use(express.json({ limit: "8mb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/announcements", announcementRoutes);

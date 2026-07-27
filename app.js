@@ -136,14 +136,18 @@ function daysLeftLabel(iso){
   return `${diff} hari lagi`;
 }
 
-/* REALTIME READ PENGUMUMAN */
-db.ref("announcements").on("value", (snap) => {
-  const val = snap.val() || {};
-  announcements = Object.entries(val)
-    .map(([id, data]) => ({ id, ...data }))
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  renderAnnouncements();
-});
+/* AMBIL DATA PENGUMUMAN DARI REST API */
+const API_BASE = "/api";
+
+async function loadAnnouncements(){
+  try {
+    const res = await fetch(`${API_BASE}/announcements`);
+    announcements = await res.json();
+    renderAnnouncements();
+  } catch (err) {
+    console.error("Gagal memuat pengumuman:", err);
+  }
+}
 
 function renderAnnouncements(){
   const list = document.getElementById("announcementList");
@@ -195,14 +199,16 @@ function renderSchedule(){
   `).join("");
 }
 
-/* REALTIME READ TUGAS */
-db.ref("tasks").on("value", (snap) => {
-  const val = snap.val() || {};
-  tasks = Object.entries(val)
-    .map(([id, data]) => ({ id, ...data }))
-    .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
-  renderTasks();
-});
+/* AMBIL DATA TUGAS DARI REST API */
+async function loadTasks(){
+  try {
+    const res = await fetch(`${API_BASE}/tasks`);
+    tasks = await res.json();
+    renderTasks();
+  } catch (err) {
+    console.error("Gagal memuat tugas:", err);
+  }
+}
 
 function renderTasks(){
   const list = document.getElementById("taskList");
@@ -293,14 +299,16 @@ function renderStudents(){
 function initials(name){ return name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase(); }
 function toTitleCase(str){ return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()); }
 
-/* REALTIME READ GALERI */
-db.ref("gallery").on("value", (snap) => {
-  const val = snap.val() || {};
-  gallery = Object.entries(val)
-    .map(([id, data]) => ({ id, ...data }))
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  renderGallery();
-});
+/* AMBIL DATA GALERI DARI REST API */
+async function loadGallery(){
+  try {
+    const res = await fetch(`${API_BASE}/gallery`);
+    gallery = await res.json();
+    renderGallery();
+  } catch (err) {
+    console.error("Gagal memuat galeri:", err);
+  }
+}
 
 function renderGallery(){
   const grid = document.getElementById("galleryGrid");
@@ -457,3 +465,14 @@ renderTeacher();
 renderClassStructure();
 renderStudents();
 renderBrandBadge();
+
+// Muat data dari server, lalu polling berkala supaya perubahan dari admin
+// (di tab/perangkat lain) ikut muncul tanpa perlu refresh manual.
+loadAnnouncements();
+loadTasks();
+loadGallery();
+setInterval(() => {
+  loadAnnouncements();
+  loadTasks();
+  loadGallery();
+}, 20000);

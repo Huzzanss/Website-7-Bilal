@@ -382,7 +382,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
             </span>
             <p><strong>Klik untuk pilih foto</strong> atau seret &amp; taruh di sini</p>
-            <span class="form-hint">JPG, PNG, atau WEBP — maks. 5MB</span>
+            <span class="form-hint">JPG, PNG, atau WEBP — maks. 3MB</span>
           </div>
           <div id="dropzonePreviewWrap" style="display:none;">
             <img id="dropzonePreview" alt="Preview foto">
@@ -429,11 +429,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Firebase Client SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="../../firebase-config.js"></script>
+  <!-- admin.js sekarang bicara ke REST API (lihat /server), bukan Firebase langsung -->
   <script src="admin.js"></script>
 </body>
 </html>

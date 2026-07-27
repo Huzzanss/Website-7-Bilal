@@ -565,6 +565,15 @@ svg{ display:block; }
   height:100%; width:0%; background: var(--primary);
   border-radius: var(--radius-full); transition: width .2s ease;
 }
+.upload-progress-bar.indeterminate{
+  background: linear-gradient(90deg, var(--primary-tint), var(--primary), var(--primary-tint));
+  background-size: 200% 100%;
+  animation: progressSlide 1.2s ease-in-out infinite;
+}
+@keyframes progressSlide{
+  0%{ background-position: 200% 0; }
+  100%{ background-position: -200% 0; }
+}
 .upload-progress-label{ font-size:0.78rem; color: var(--on-surface-variant); font-weight:600; }
 
 /* ===== Confirm / Warning Modal Icon ===== */
