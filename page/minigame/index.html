@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="../../logo-kelas.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../style.css">
 <script>
   (function(){
@@ -20,19 +20,19 @@
   body{ min-height:100vh; display:flex; flex-direction:column; }
   .game-wrap{ flex:1; display:flex; flex-direction:column; padding: 1.5rem 0 3rem; }
   .game-card{
-    background: var(--surface); border:1px solid var(--outline); border-radius: var(--radius-lg);
+    background: var(--surface); border: 3px solid var(--pixel-ink);
     box-shadow: var(--shadow-pop); max-width: 520px; width:100%; margin: 0 auto;
     padding: 1.5rem; text-align:center;
   }
-  .game-card h1{ font-size:1.35rem; margin-bottom:0.5rem; }
+  .game-card h1{ font-size:1.35rem; margin-bottom:0.5rem; text-transform: uppercase; }
   .game-card p{ color: var(--on-surface-variant); font-size:0.92rem; margin-bottom:0.4rem; }
   .game-badge{
     display:inline-flex; align-items:center; gap:0.4rem;
-    background: var(--tertiary-tint); color:#B45309; border:1px solid #FDE9B8;
-    font-weight:700; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em;
-    padding:0.25rem 0.7rem; border-radius: var(--radius-full); margin-bottom:0.9rem;
+    background: var(--tertiary-tint); color: var(--tertiary); border: 2px solid var(--pixel-ink);
+    font-family: var(--font-mono);
+    font-weight:700; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em;
+    padding:0.25rem 0.7rem; margin-bottom:0.9rem;
   }
-  [data-theme="dark"] .game-badge{ color:#FBBF24; border-color: rgba(245,158,11,0.35); }
   .game-highscore{
     font-family: var(--font-display); font-weight:700; font-size:1rem;
     color: var(--primary); margin: 0.8rem 0 1.2rem;
@@ -52,7 +52,7 @@
   #gameArea{
     position:relative; max-width:520px; width:100%; height: 62vh; max-height:480px;
     margin: 0 auto; background: linear-gradient(180deg, var(--primary-tint) 0%, var(--surface) 100%);
-    border:1px solid var(--outline); border-radius: var(--radius-lg); overflow:hidden;
+    border: 3px solid var(--pixel-ink); overflow:hidden;
     box-shadow: var(--shadow-card); touch-action: none;
   }
   .falling-item{
