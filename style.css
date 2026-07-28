@@ -428,7 +428,8 @@ img{ max-width: 100%; display:block; }
   overflow:hidden; border: 3px solid var(--pixel-ink); background: var(--surface);
   box-shadow: 5px 5px 0 0 var(--pixel-shadow);
 }
-.gallery-item img{ width:100%; height:100%; object-fit:cover; }
+.gallery-item img{ width:100%; height:100%; object-fit:cover; cursor: zoom-in; transition: opacity .12s ease; }
+.gallery-item img:hover{ opacity: 0.85; }
 .gallery-remove{
   position:absolute; top:6px; right:6px;
   background: var(--tertiary-tint); color: var(--tertiary); border: 2px solid var(--pixel-ink);
@@ -632,6 +633,24 @@ svg{ display:block; }
   padding:0.5rem 0.7rem; background: var(--surface); color: var(--on-surface);
   font-family: var(--font-mono); font-size:0.8rem; text-transform: uppercase;
 }
+
+/* ===== Lightbox (Galeri Tampilan Penuh) ===== */
+.lightbox-backdrop{
+  display:none; position:fixed; inset:0; background: rgba(14,20,28,0.92);
+  z-index: 90; align-items:center; justify-content:center; padding: 2rem;
+}
+.lightbox-backdrop.open{ display:flex; }
+.lightbox-img{
+  max-width: 92vw; max-height: 88vh;
+  border: 4px solid var(--pixel-ink); box-shadow: var(--shadow-pop);
+  background: var(--surface); object-fit: contain;
+}
+.lightbox-close{
+  position:fixed; top:1.2rem; right:1.2rem; z-index: 91;
+  width:40px; height:40px; background: var(--surface); color: var(--on-surface);
+  border: 2px solid var(--pixel-ink); display:flex; align-items:center; justify-content:center;
+}
+.lightbox-close svg{ width:18px; height:18px; }
 
 /* ===== Responsive ===== */
 @media (max-width: 860px){

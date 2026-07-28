@@ -215,6 +215,14 @@
         </div>
         <button type="submit" class="btn btn-primary" id="feedbackSubmitBtn">Kirim Masukan</button>
       </form>
+
+      <div class="section-head" style="margin-top:2.5rem;">
+        <div>
+          <p class="eyebrow">Terbuka untuk semua</p>
+          <h3 style="font-family:var(--font-display); font-size:1.05rem;">Masukan dari Teman-teman</h3>
+        </div>
+      </div>
+      <div class="announcement-list" id="feedbackPublicList"></div>
     </div>
   </section>
 
@@ -227,6 +235,14 @@
 </footer>
 
 <div class="toast" id="toast"></div>
+
+<!-- ===== LIGHTBOX (GALERI TAMPILAN PENUH) ===== -->
+<div class="lightbox-backdrop" id="lightboxBackdrop">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Tutup">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="Foto kegiatan (tampilan penuh)">
+</div>
 
 <!-- app.js sekarang bicara ke REST API sendiri (lihat /server), bukan Firebase langsung -->
 <script src="app.js"></script>

@@ -368,6 +368,49 @@ if (feedbackForm){
   });
 }
 
+/* KOTAK SARAN (PUBLIK, TAMPILAN BACA SAJA) */
+let feedbackPublicList = [];
+
+async function loadFeedbackPublic(){
+  try {
+    const res = await fetch(`${API_BASE}/feedback`);
+    feedbackPublicList = await res.json();
+    renderFeedbackPublic();
+  } catch (err) {
+    console.error("Gagal memuat masukan:", err);
+  }
+}
+
+function renderFeedbackPublic(){
+  const list = document.getElementById("feedbackPublicList");
+  if (!list) return;
+  if (!feedbackPublicList.length){
+    list.innerHTML = `<p class="empty-note">Belum ada masukan. Jadi yang pertama, yuk!</p>`;
+    return;
+  }
+  list.innerHTML = feedbackPublicList.map(f => `
+    <div class="announcement-item">
+      <div class="a-body">
+        <strong>${escapeHTML(f.name || "Anonim")}</strong>
+        <p>${escapeHTML(f.message)}</p>
+      </div>
+      <span class="a-date">${escapeHTML(relativeTimePublic(f.createdAt))}</span>
+    </div>
+  `).join("");
+}
+
+function relativeTimePublic(ts){
+  if (!ts) return "";
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "Baru saja";
+  if (min < 60) return `${min} menit lalu`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} jam lalu`;
+  const day = Math.floor(hr / 24);
+  return `${day} hari lalu`;
+}
+
 /* SISWA & WALI KELAS */
 function avatarInnerHTML(name, photo){
   if (photo && photo.trim()){
@@ -437,10 +480,29 @@ function renderGallery(){
   }
   grid.innerHTML = gallery.map(g => `
     <div class="gallery-item">
-      <img src="${g.url}" alt="Dokumentasi kelas" loading="lazy">
+      <img src="${g.url}" alt="Dokumentasi kelas" loading="lazy" onclick="openLightbox('${escapeAttr(g.url)}')">
     </div>
   `).join("");
 }
+
+/* LIGHTBOX (TAMPILAN PENUH FOTO GALERI) */
+function openLightbox(url){
+  const backdrop = document.getElementById("lightboxBackdrop");
+  const img = document.getElementById("lightboxImg");
+  if (!backdrop || !img) return;
+  img.src = url;
+  backdrop.classList.add("open");
+}
+function closeLightbox(){
+  document.getElementById("lightboxBackdrop")?.classList.remove("open");
+}
+document.getElementById("lightboxClose")?.addEventListener("click", closeLightbox);
+document.getElementById("lightboxBackdrop")?.addEventListener("click", (e) => {
+  if (e.target.id === "lightboxBackdrop") closeLightbox();
+});
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeLightbox();
+});
 
 /* NAV & UTIL */
 const navToggle = document.getElementById("navToggle");
@@ -589,8 +651,10 @@ renderBrandBadge();
 loadAnnouncements();
 loadTasks();
 loadGallery();
+loadFeedbackPublic();
 setInterval(() => {
   loadAnnouncements();
   loadTasks();
   loadGallery();
+  loadFeedbackPublic();
 }, 20000);

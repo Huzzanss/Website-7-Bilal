@@ -28,8 +28,10 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Admin only from here down.
-router.get("/", requireAuth, async (req, res) => {
+// Public: anyone can view submitted feedback (read-only) — no auth required.
+// Only PATCH/DELETE below require admin auth, so visitors can never edit or
+// remove entries, just see them.
+router.get("/", async (req, res) => {
   try {
     const snap = await db.ref("feedback").once("value");
     const val = snap.val() || {};

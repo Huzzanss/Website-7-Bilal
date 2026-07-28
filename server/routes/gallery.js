@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const { db, bucket, admin } = require("../config/firebaseAdmin");
 const { requireAuth } = require("../middleware/auth");
 
@@ -52,10 +53,22 @@ router.post("/upload", requireAuth, async (req, res) => {
   const filePath = `gallery/${Date.now()}_${safeName}`;
   const fileRef = bucket.file(filePath);
 
+  // Use Firebase's own download-token scheme instead of file.makePublic().
+  // makePublic() sets an object ACL, which throws on any bucket that has
+  // "uniform bucket-level access" enabled — the default for new Firebase
+  // Storage buckets. The token scheme (same one the client SDK's
+  // getDownloadURL() produces) works regardless of that setting.
+  const downloadToken = crypto.randomUUID();
+
   try {
-    await fileRef.save(buffer, { metadata: { contentType } });
-    await fileRef.makePublic();
-    const url = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+    await fileRef.save(buffer, {
+      metadata: {
+        contentType,
+        metadata: { firebaseStorageDownloadTokens: downloadToken },
+      },
+    });
+    const encodedPath = encodeURIComponent(filePath);
+    const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${downloadToken}`;
 
     const ref = await db.ref("gallery").push({
       url,
@@ -70,7 +83,7 @@ router.post("/upload", requireAuth, async (req, res) => {
     res.json({ success: true, id: ref.key, url });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Gagal mengunggah foto." });
+    res.status(500).json({ success: false, message: "Gagal mengunggah foto: " + err.message });
   }
 });
 
