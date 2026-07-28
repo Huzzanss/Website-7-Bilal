@@ -45,6 +45,7 @@ let announcements = [];
 let tasks = [];
 let gallery = [];
 let activityLog = [];
+let feedbackList = [];
 
 let editingAnnouncementId = null;
 let editingTaskId = null;
@@ -117,8 +118,16 @@ async function loadActivityLog() {
   } catch (err) { console.error("Gagal memuat log aktivitas:", err); }
 }
 
+async function loadFeedback() {
+  try {
+    const res = await apiFetch("/feedback");
+    feedbackList = await res.json();
+    renderFeedback();
+  } catch (err) { console.error("Gagal memuat masukan:", err); }
+}
+
 async function loadAll() {
-  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog()]);
+  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog(), loadFeedback()]);
 }
 
 function relativeTime(ts) {
@@ -236,6 +245,71 @@ function renderGallery() {
       <button class="btn-icon danger delete-img-btn" onclick="confirmDeleteGalleryItem('${g.id}')" title="Hapus Foto" style="position: absolute; top: 8px; right: 8px;">&times;</button>
     </div>
   `).join("");
+}
+
+/* ===== RENDER: KOTAK SARAN ===== */
+function renderFeedback() {
+  const list = document.getElementById("feedbackList");
+  const badge = document.getElementById("feedbackUnreadBadge");
+  if (!list) return;
+
+  const unreadCount = feedbackList.filter(f => !f.read).length;
+  if (badge) {
+    if (unreadCount > 0) {
+      badge.textContent = `${unreadCount} Belum Dibaca`;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  if (!feedbackList.length) {
+    list.innerHTML = `<p class="empty-note">Belum ada masukan.</p>`;
+    return;
+  }
+
+  list.innerHTML = feedbackList.map(f => `
+    <div class="announcement-item admin-card-item" style="${f.read ? "" : "border-color: var(--primary-dark);"}">
+      <div class="a-body">
+        <strong>${escapeHTML(f.name || "Anonim")}${f.read ? "" : ' <span class="admin-chip">Baru</span>'}</strong>
+        <p>${escapeHTML(f.message)}</p>
+        <span class="a-date">${relativeTime(f.createdAt)}</span>
+      </div>
+      <div class="action-btns" style="display:flex; gap:0.4rem; align-items:flex-start;">
+        <button class="btn-icon" onclick="toggleFeedbackRead('${f.id}')" title="${f.read ? "Tandai belum dibaca" : "Tandai sudah dibaca"}">
+          ${f.read
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+          }
+        </button>
+        <button class="btn-icon danger" onclick="confirmDeleteFeedback('${f.id}')" title="Hapus Masukan">&times;</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function toggleFeedbackRead(id) {
+  const res = await apiFetch(`/feedback/${id}/read`, { method: "PATCH" });
+  const result = await res.json();
+  if (result.success) loadFeedback();
+}
+
+function confirmDeleteFeedback(id) {
+  openConfirmModal(
+    "Hapus Masukan?",
+    "Masukan ini akan dihapus permanen.",
+    async () => {
+      const res = await apiFetch(`/feedback/${id}`, { method: "DELETE" });
+      const result = await res.json();
+      if (result.success) {
+        showToast("Masukan dihapus!");
+        loadFeedback();
+        loadActivityLog();
+      } else {
+        showToast(result.message || "Gagal menghapus masukan.");
+      }
+    }
+  );
 }
 
 /* ===== CRUD: PENGUMUMAN ===== */

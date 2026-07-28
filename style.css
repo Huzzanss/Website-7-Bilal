@@ -642,6 +642,58 @@ svg{ display:block; }
   .structure-grid{ grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ===== Kalender Tugas ===== */
+.calendar-nav{ display:flex; align-items:center; gap:0.6rem; }
+.calendar-month-label{
+  font-family: var(--font-display); font-weight:700; font-size:1rem;
+  min-width: 150px; text-align:center; text-transform: uppercase;
+}
+.calendar-weekdays{
+  display:grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  margin-bottom: 2px;
+}
+.calendar-weekdays span{
+  font-family: var(--font-mono); font-size:0.75rem; font-weight:700; text-transform: uppercase;
+  text-align:center; padding: 0.4rem 0; color: var(--on-surface-variant);
+}
+.calendar-grid{
+  display:grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  background: var(--pixel-ink); border: 3px solid var(--pixel-ink);
+}
+.calendar-day{
+  background: var(--surface); min-height: 92px; padding: 0.35rem;
+  display:flex; flex-direction:column; gap:0.25rem;
+}
+.calendar-day.other-month{ background: var(--surface-alt); opacity: 0.5; }
+.calendar-day.today{ background: var(--primary-tint); }
+.calendar-day-number{ font-family: var(--font-mono); font-size:0.8rem; font-weight:700; }
+.calendar-tasks{ display:flex; flex-direction:column; gap:2px; }
+.calendar-task-chip{
+  font-family: var(--font-mono); font-size:0.65rem; font-weight:700; text-transform: uppercase;
+  padding: 0.14rem 0.3rem; border: 1px solid var(--pixel-ink);
+  background: var(--surface-alt); color: var(--on-surface);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor: default;
+}
+.calendar-task-chip.soon{ background: var(--primary-tint); }
+.calendar-task-chip.urgent{ background: var(--primary); }
+.calendar-task-chip.overdue{ background: var(--tertiary-tint); color: var(--tertiary); }
+.calendar-task-chip.done{ background: var(--secondary-tint); color: var(--secondary-dark); }
+.calendar-more{ font-family: var(--font-mono); font-size:0.65rem; color: var(--on-surface-variant); }
+
+@media (max-width: 640px){
+  .calendar-day{ min-height: 60px; }
+  .calendar-day-number{ font-size:0.7rem; }
+  .calendar-task-chip{ font-size: 0.58rem; padding: 0.1rem 0.2rem; }
+  .calendar-weekdays span{ font-size: 0.65rem; padding: 0.3rem 0; }
+}
+
+/* ===== Urgensi Deadline Tugas ===== */
+.task-card.urgency-overdue{ border-color: var(--tertiary); box-shadow: 8px 8px 0 0 var(--tertiary-tint); }
+.task-card.urgency-urgent{ border-color: var(--deadline-red); }
+.deadline.urgency-overdue{ color: var(--tertiary); }
+.deadline.urgency-urgent{ color: var(--deadline-red); }
+.deadline.urgency-soon{ color: #9c5a1e; }
+
 @media (max-width: 720px){
   .main-nav{
     position:absolute; top:68px; left:0; right:0;

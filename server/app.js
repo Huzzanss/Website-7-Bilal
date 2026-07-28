@@ -11,6 +11,7 @@ const announcementRoutes = require("./routes/announcements");
 const taskRoutes = require("./routes/tasks");
 const galleryRoutes = require("./routes/gallery");
 const activityLogRoutes = require("./routes/activityLog");
+const feedbackRoutes = require("./routes/feedback");
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use("/api/announcements", announcementRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/activity-log", activityLogRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 module.exports = app;

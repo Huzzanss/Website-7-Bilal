@@ -136,6 +136,22 @@ function daysLeftLabel(iso){
   return `${diff} hari lagi`;
 }
 
+function daysUntilDeadline(iso){
+  if (!iso) return 999;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(iso + "T00:00:00");
+  return Math.round((target - today) / 86400000);
+}
+
+function deadlineUrgencyClass(task){
+  if (task.status === "selesai") return "done";
+  const diff = daysUntilDeadline(task.deadline);
+  if (diff < 0) return "urgency-overdue";
+  if (diff <= 1) return "urgency-urgent";
+  if (diff <= 3) return "urgency-soon";
+  return "";
+}
+
 /* AMBIL DATA PENGUMUMAN DARI REST API */
 const API_BASE = "/api";
 
@@ -212,30 +228,34 @@ async function loadTasks(){
 
 function renderTasks(){
   const list = document.getElementById("taskList");
-  if (!list) return;
-  let items = tasks.slice();
-  if (activeFilter !== "semua") items = items.filter(t => t.status === activeFilter);
+  if (list) {
+    let items = tasks.slice();
+    if (activeFilter !== "semua") items = items.filter(t => t.status === activeFilter);
 
-  if (!items.length){
-    list.innerHTML = `<p class="empty-note">Tidak ada tugas untuk filter ini.</p>`;
-    return;
+    if (!items.length){
+      list.innerHTML = `<p class="empty-note">Tidak ada tugas untuk filter ini.</p>`;
+    } else {
+      list.innerHTML = items.map(t => {
+        const urgency = deadlineUrgencyClass(t);
+        return `
+        <div class="task-card ${urgency}">
+          <div class="task-top">
+            <span class="task-subject">${escapeHTML(t.subject)}</span>
+            <span class="status-pill ${t.status}">${t.status === "selesai" ? "Selesai" : "Berjalan"}</span>
+          </div>
+          <div class="task-title">${escapeHTML(t.title)}</div>
+          <div class="task-desc">${escapeHTML(t.desc || "")}</div>
+          <div class="task-foot">
+            <span class="deadline ${t.status === "selesai" ? "done" : urgency}">
+              ${formatDate(t.deadline)} · ${t.status === "selesai" ? "Selesai" : daysLeftLabel(t.deadline)}
+            </span>
+          </div>
+        </div>
+      `;
+      }).join("");
+    }
   }
-
-  list.innerHTML = items.map(t => `
-    <div class="task-card">
-      <div class="task-top">
-        <span class="task-subject">${escapeHTML(t.subject)}</span>
-        <span class="status-pill ${t.status}">${t.status === "selesai" ? "Selesai" : "Berjalan"}</span>
-      </div>
-      <div class="task-title">${escapeHTML(t.title)}</div>
-      <div class="task-desc">${escapeHTML(t.desc || "")}</div>
-      <div class="task-foot">
-        <span class="deadline ${t.status === "selesai" ? "done" : ""}">
-          ${formatDate(t.deadline)} · ${t.status === "selesai" ? "Selesai" : daysLeftLabel(t.deadline)}
-        </span>
-      </div>
-    </div>
-  `).join("");
+  renderCalendar();
 }
 
 const filterRow = document.getElementById("filterRow");
@@ -247,6 +267,104 @@ if (filterRow) {
     document.querySelectorAll("#filterRow .chip").forEach(c => c.classList.remove("active"));
     btn.classList.add("active");
     renderTasks();
+  });
+}
+
+/* KALENDER TUGAS (tampilan bulanan) */
+let calendarDate = new Date();
+const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+function renderCalendar(){
+  const grid = document.getElementById("calendarGrid");
+  const label = document.getElementById("calMonthLabel");
+  if (!grid || !label) return;
+
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  label.textContent = `${MONTH_NAMES[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1);
+  const firstWeekday = (firstDay.getDay() + 6) % 7; // 0 = Senin
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const cells = [];
+  for (let i = firstWeekday - 1; i >= 0; i--){
+    cells.push({ day: daysInPrevMonth - i, otherMonth: true, dateStr: null });
+  }
+  for (let d = 1; d <= daysInMonth; d++){
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    cells.push({ day: d, otherMonth: false, dateStr });
+  }
+  while (cells.length % 7 !== 0){
+    cells.push({ day: cells.length - firstWeekday - daysInMonth + 1, otherMonth: true, dateStr: null });
+  }
+
+  grid.innerHTML = cells.map(cell => {
+    if (cell.otherMonth){
+      return `<div class="calendar-day other-month"><span class="calendar-day-number">${cell.day}</span></div>`;
+    }
+    const dayTasks = tasks.filter(t => t.deadline === cell.dateStr);
+    const isToday = cell.dateStr === todayStr;
+    const chips = dayTasks.slice(0, 2).map(t => {
+      const cls = deadlineUrgencyClass(t);
+      return `<div class="calendar-task-chip ${cls}" title="${escapeAttr(t.subject + ": " + t.title)}">${escapeHTML(t.subject)}</div>`;
+    }).join("");
+    const more = dayTasks.length > 2 ? `<div class="calendar-more">+${dayTasks.length - 2} lainnya</div>` : "";
+    return `
+      <div class="calendar-day ${isToday ? "today" : ""}">
+        <span class="calendar-day-number">${cell.day}</span>
+        <div class="calendar-tasks">${chips}${more}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+const calPrevBtn = document.getElementById("calPrevBtn");
+const calNextBtn = document.getElementById("calNextBtn");
+if (calPrevBtn) calPrevBtn.addEventListener("click", () => { calendarDate.setMonth(calendarDate.getMonth() - 1); renderCalendar(); });
+if (calNextBtn) calNextBtn.addEventListener("click", () => { calendarDate.setMonth(calendarDate.getMonth() + 1); renderCalendar(); });
+
+/* KOTAK SARAN */
+const feedbackForm = document.getElementById("feedbackForm");
+if (feedbackForm){
+  feedbackForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nameInput = document.getElementById("feedbackName");
+    const messageInput = document.getElementById("feedbackMessage");
+    const messageError = document.getElementById("feedbackMessageError");
+    const submitBtn = document.getElementById("feedbackSubmitBtn");
+
+    const name = nameInput.value.trim();
+    const message = messageInput.value.trim();
+
+    if (!message){
+      messageError.textContent = "Pesan tidak boleh kosong.";
+      messageInput.focus();
+      return;
+    }
+    messageError.textContent = "";
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch(`${API_BASE}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, message }),
+      });
+      const result = await res.json();
+      if (result.success){
+        showToast("Terima kasih! Masukanmu sudah terkirim. 🙏");
+        feedbackForm.reset();
+      } else {
+        messageError.textContent = result.message || "Gagal mengirim, coba lagi.";
+      }
+    } catch (err) {
+      showToast("Gagal mengirim, cek koneksi internet kamu.");
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 }
 

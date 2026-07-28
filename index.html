@@ -40,8 +40,10 @@
       <a href="#beranda" id="navBeranda" data-nav>Beranda</a>
       <a href="#jadwal" data-nav>Jadwal</a>
       <a href="#tugas" data-nav>Tugas &amp; Ujian</a>
+      <a href="#kalender" data-nav>Kalender</a>
       <a href="#siswa" data-nav>Siswa</a>
       <a href="#galeri" data-nav>Galeri</a>
+      <a href="#saran" data-nav>Saran</a>
     </nav>
   </div>
 </header>
@@ -123,6 +125,32 @@
     </div>
   </section>
 
+  <!-- ===== KALENDER TUGAS ===== -->
+  <section id="kalender" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Semua deadline dalam satu tampilan</p>
+          <h2>Kalender Tugas</h2>
+        </div>
+        <div class="calendar-nav">
+          <button class="icon-btn" id="calPrevBtn" aria-label="Bulan sebelumnya">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="calendar-month-label" id="calMonthLabel"></span>
+          <button class="icon-btn" id="calNextBtn" aria-label="Bulan berikutnya">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="section-desc">Kotak berwarna menandakan tugas/ujian yang tenggatnya jatuh pada tanggal itu. Jadwal pelajaran harian tetap ada di tab <a href="#jadwal" style="text-decoration:underline;">Jadwal</a>.</p>
+      <div class="calendar-weekdays">
+        <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </section>
+
   <!-- ===== DAFTAR SISWA ===== -->
   <section id="siswa" class="section">
     <div class="container">
@@ -162,6 +190,31 @@
         </div>
       </div>
       <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== KOTAK SARAN ===== -->
+  <section id="saran" class="section alt-bg">
+    <div class="container" style="max-width:640px;">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Kami dengar masukanmu</p>
+          <h2>Kotak Saran</h2>
+        </div>
+      </div>
+      <p class="section-desc">Ada ide, kritik, atau masukan buat website atau kelas ini? Tulis di sini &mdash; nanti dibaca langsung sama admin kelas. Boleh anonim.</p>
+      <form id="feedbackForm">
+        <div class="form-group">
+          <label for="feedbackName">Nama (opsional)</label>
+          <input type="text" id="feedbackName" placeholder="Boleh dikosongkan kalau mau anonim" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="feedbackMessage">Pesan</label>
+          <textarea id="feedbackMessage" placeholder="Tulis saran atau masukanmu di sini..." required maxlength="2000"></textarea>
+          <div class="field-error" id="feedbackMessageError"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="feedbackSubmitBtn">Kirim Masukan</button>
+      </form>
     </div>
   </section>
 
