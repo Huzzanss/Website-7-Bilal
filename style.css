@@ -1,14 +1,14 @@
 /* =========================================================
    Kelas VII Bilal bin Rabbah — Design System "Retro Pixel Scholar"
    Diadaptasi dari referensi Google Stitch: nuansa 8-bit/16-bit RPG,
-   kertas grid krem, border pixel tebal, hard shadow tanpa blur.
+   kertas grid, border pixel tebal, hard shadow tanpa blur.
    ========================================================= */
 
 :root{
   /* Warna dasar */
   --pixel-ink: #000000;
-  --pixel-shadow: #D9D4C7;
-  --grid-line: #E6E1D3;
+  --pixel-shadow: #C9D2DE;
+  --grid-line: #DCE6F0;
 
   --primary: #fad02c;
   --primary-dark: #ebc31a;
@@ -25,12 +25,12 @@
   --deadline-red: #ba1a1a;
   --success-teal: #00743a;
 
-  --surface-bg: #fff9eb;
+  --surface-bg: #f3f6fa;
   --surface: #ffffff;
-  --surface-alt: #f4eedb;
-  --on-surface: #1e1c10;
-  --on-surface-variant: #4d4633;
-  --outline: #7f7660;
+  --surface-alt: #e9eef5;
+  --on-surface: #14181f;
+  --on-surface-variant: #4b5566;
+  --outline: #7d8a9e;
 
   --radius-sm: 0px;
   --radius-md: 0px;
@@ -44,14 +44,14 @@
   --font-body: 'Manrope', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --header-bg: rgba(255, 249, 235, 0.95);
+  --header-bg: rgba(243, 246, 250, 0.95);
 }
 
 /* ===== Dark Mode ("Night Quest") ===== */
 [data-theme="dark"]{
-  --pixel-ink: #fff9eb;
+  --pixel-ink: #f3f6fa;
   --pixel-shadow: #000000;
-  --grid-line: #2a2620;
+  --grid-line: #212c3d;
 
   --primary: #ebc31a;
   --primary-dark: #fad02c;
@@ -68,17 +68,17 @@
   --deadline-red: #ff8a80;
   --success-teal: #4ae183;
 
-  --surface-bg: #16140d;
-  --surface: #241f16;
-  --surface-alt: #2b2519;
-  --on-surface: #f7f0de;
-  --on-surface-variant: #cabf9e;
-  --outline: #55503e;
+  --surface-bg: #0e141c;
+  --surface: #1b2432;
+  --surface-alt: #212c3d;
+  --on-surface: #edf1f7;
+  --on-surface-variant: #a6b2c4;
+  --outline: #3b475c;
 
   --shadow-card: 8px 8px 0 0 var(--pixel-shadow);
   --shadow-pop: 8px 8px 0 0 var(--pixel-shadow), 8px 8px 0 4px var(--pixel-ink);
 
-  --header-bg: rgba(22, 20, 13, 0.92);
+  --header-bg: rgba(14, 20, 28, 0.92);
 }
 [data-theme="dark"] body{ color-scheme: dark; }
 [data-theme="dark"] .brand-badge{ box-shadow: none; }
@@ -110,7 +110,7 @@ img{ max-width: 100%; display:block; }
 .eyebrow{
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--secondary);
@@ -178,12 +178,12 @@ img{ max-width: 100%; display:block; }
 .brand-badge img{ width:100%; height:100%; object-fit:cover; image-rendering: pixelated; }
 .brand-text{ display:flex; flex-direction:column; line-height:1.15; }
 .brand-text strong{ font-family: var(--font-display); font-weight:700; font-size:1.02rem; color: var(--on-surface); text-transform: uppercase; }
-.brand-text small{ font-family: var(--font-mono); font-size:0.68rem; color: var(--on-surface-variant); }
+.brand-text small{ font-family: var(--font-mono); font-size:0.72rem; color: var(--on-surface-variant); }
 
 .main-nav{ display:flex; align-items:center; gap:0.4rem; }
 .main-nav a{
   font-family: var(--font-mono);
-  font-weight:700; font-size:0.78rem;
+  font-weight:700; font-size:0.8rem;
   text-transform: uppercase; letter-spacing: 0.02em;
   color: var(--on-surface);
   padding: 0.5rem 0.7rem;
@@ -254,9 +254,9 @@ img{ max-width: 100%; display:block; }
   padding: 0.9rem 1rem;
   display:flex; justify-content:space-between; gap:0.75rem;
 }
-.announcement-item .a-body strong{ font-family: var(--font-display); font-weight:700; display:block; margin-bottom:0.2rem; }
+.announcement-item .a-body strong{ font-family: var(--font-body); font-weight:700; display:block; margin-bottom:0.2rem; }
 .announcement-item .a-body p{ color: var(--on-surface-variant); font-size:0.9rem; }
-.announcement-item .a-date{ font-family: var(--font-mono); font-size:0.7rem; color: var(--on-surface-variant); white-space:nowrap; }
+.announcement-item .a-date{ font-family: var(--font-mono); font-size:0.78rem; color: var(--on-surface-variant); white-space:nowrap; }
 .empty-note{ color: var(--on-surface-variant); font-size:0.9rem; padding: 0.5rem 0.2rem; font-family: var(--font-mono); }
 .item-actions{ display:flex; gap:0.35rem; align-items:flex-start; }
 .icon-btn{
@@ -276,8 +276,8 @@ img{ max-width: 100%; display:block; }
 }
 .quick-card:hover{ transform: translate(-3px,-3px); box-shadow: 11px 11px 0 0 var(--pixel-shadow); }
 .quick-icon{ font-size:1.5rem; }
-.quick-title{ font-family: var(--font-display); font-weight:700; text-transform: uppercase; font-size: 0.95rem; }
-.quick-desc{ font-size:0.8rem; font-family: var(--font-mono); color: var(--on-surface-variant); }
+.quick-title{ font-family: var(--font-body); font-weight:700; text-transform: uppercase; font-size: 0.95rem; }
+.quick-desc{ font-size:0.85rem; font-family: var(--font-mono); color: var(--on-surface-variant); }
 
 /* ===== Jadwal ===== */
 .schedule-tabs{
@@ -287,7 +287,7 @@ img{ max-width: 100%; display:block; }
 .schedule-tabs button{
   border: 2px solid var(--pixel-ink); background: var(--surface);
   padding:0.5rem 1rem;
-  font-family: var(--font-mono); font-weight:700; font-size:0.78rem;
+  font-family: var(--font-mono); font-weight:700; font-size:0.8rem;
   text-transform: uppercase;
   white-space:nowrap; color: var(--on-surface);
 }
@@ -306,7 +306,7 @@ img{ max-width: 100%; display:block; }
   font-family: var(--font-mono); font-weight:700; font-size:0.8rem;
   color: var(--secondary); width:110px; flex-shrink:0;
 }
-.schedule-subject{ flex:1; font-weight:700; font-family: var(--font-display); }
+.schedule-subject{ flex:1; font-weight:700; font-family: var(--font-body); }
 .schedule-edit{
   background: var(--surface); border: 2px solid var(--pixel-ink); font-size:1rem; color: var(--on-surface);
   padding:4px 6px;
@@ -317,7 +317,7 @@ img{ max-width: 100%; display:block; }
 .filter-row{ display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
 .chip{
   border: 2px solid var(--pixel-ink); background: var(--surface);
-  padding:0.4rem 0.95rem; font-size:0.75rem; font-weight:700; font-family: var(--font-mono);
+  padding:0.4rem 0.95rem; font-size:0.8rem; font-weight:700; font-family: var(--font-mono);
   text-transform: uppercase;
   color: var(--on-surface);
 }
@@ -331,19 +331,19 @@ img{ max-width: 100%; display:block; }
 }
 .task-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; }
 .task-subject{
-  font-size:0.68rem; font-weight:700; font-family: var(--font-mono);
+  font-size:0.72rem; font-weight:700; font-family: var(--font-mono);
   text-transform: uppercase;
   color: var(--on-surface); background: var(--primary-tint);
   border: 2px solid var(--pixel-ink);
   padding:0.2rem 0.6rem; letter-spacing:0.02em;
 }
-.task-title{ font-family: var(--font-display); font-weight:700; font-size:1.04rem; }
+.task-title{ font-family: var(--font-body); font-weight:700; font-size:1.04rem; }
 .task-desc{ color: var(--on-surface-variant); font-size:0.88rem; }
 .task-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:0.3rem; flex-wrap: wrap; gap: 0.5rem; }
-.deadline{ font-family: var(--font-mono); font-size:0.78rem; font-weight:700; color: var(--deadline-red); }
+.deadline{ font-family: var(--font-mono); font-size:0.8rem; font-weight:700; color: var(--deadline-red); }
 .deadline.done{ color: var(--success-teal); }
 .status-pill{
-  font-size:0.68rem; font-weight:700; padding:0.25rem 0.65rem;
+  font-size:0.72rem; font-weight:700; padding:0.25rem 0.65rem;
   font-family: var(--font-mono); text-transform: uppercase;
   border: 2px solid var(--pixel-ink);
 }
@@ -360,7 +360,7 @@ img{ max-width: 100%; display:block; }
   border: 2px solid var(--pixel-ink);
 }
 .avatar img{ image-rendering: pixelated; }
-.label-sm{ font-size:0.68rem; color: var(--on-surface-variant); font-family: var(--font-mono); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.15rem; }
+.label-sm{ font-size:0.72rem; color: var(--on-surface-variant); font-family: var(--font-mono); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.15rem; }
 
 .teacher-card{
   display:flex; align-items:center; gap:1rem;
@@ -392,11 +392,11 @@ img{ max-width: 100%; display:block; }
 .student-no{
   position:absolute; top:-8px; left:-8px;
   background: var(--tertiary-tint); color: var(--tertiary); font-family: var(--font-mono);
-  font-size:0.65rem; font-weight:800; width:22px; height:22px;
+  font-size:0.68rem; font-weight:800; width:22px; height:22px;
   display:flex; align-items:center; justify-content:center;
   border: 2px solid var(--pixel-ink); z-index:2;
 }
-.student-name{ font-family: var(--font-display); font-weight:700; font-size:0.86rem; line-height:1.3; }
+.student-name{ font-family: var(--font-body); font-weight:700; font-size:0.88rem; line-height:1.3; }
 
 /* ===== Struktur Organisasi Kelas ===== */
 .structure-grid{
@@ -411,13 +411,13 @@ img{ max-width: 100%; display:block; }
 }
 .structure-item:hover{ transform: translate(-3px,-3px); box-shadow: 11px 11px 0 0 var(--pixel-shadow); }
 .structure-role{
-  font-family: var(--font-mono); font-weight:700; font-size:0.65rem;
+  font-family: var(--font-mono); font-weight:700; font-size:0.72rem;
   text-transform: uppercase; letter-spacing:0.03em;
   color: var(--on-surface); background: var(--primary-tint);
   border: 2px solid var(--pixel-ink); padding:0.2rem 0.6rem;
 }
 .structure-item .avatar{ background: var(--tertiary-tint); color: var(--tertiary); }
-.structure-nickname{ font-size:0.75rem; font-family: var(--font-mono); color: var(--on-surface-variant); }
+.structure-nickname{ font-size:0.8rem; font-family: var(--font-mono); color: var(--on-surface-variant); }
 
 /* ===== Galeri ===== */
 .gallery-grid{
@@ -446,7 +446,7 @@ img{ max-width: 100%; display:block; }
   border-top: 4px solid var(--pixel-ink);
   padding: 1.5rem 0; margin-top:1rem;
 }
-.site-footer p{ font-family: var(--font-mono); font-size:0.78rem; text-align:center; max-width: 60ch; margin: 0 auto; }
+.site-footer p{ font-family: var(--font-mono); font-size:0.82rem; text-align:center; max-width: 60ch; margin: 0 auto; }
 
 /* ===== FAB (mobile) ===== */
 .fab{
@@ -462,7 +462,7 @@ img{ max-width: 100%; display:block; }
 .fab-menu.open{ display:flex; }
 .fab-menu button{
   background: var(--surface); border: 2px solid var(--pixel-ink);
-  padding:0.6rem 1rem; font-weight:700; font-family: var(--font-mono); font-size:0.78rem;
+  padding:0.6rem 1rem; font-weight:700; font-family: var(--font-mono); font-size:0.8rem;
   text-transform: uppercase;
   box-shadow: 3px 3px 0 0 var(--pixel-ink);
   text-align:left; color: var(--on-surface);
@@ -470,7 +470,7 @@ img{ max-width: 100%; display:block; }
 
 /* ===== Modal ===== */
 .modal-backdrop{
-  display:none; position:fixed; inset:0; background: rgba(30,28,16,0.55);
+  display:none; position:fixed; inset:0; background: rgba(20,24,31,0.55);
   z-index: 60; align-items:flex-end; justify-content:center;
 }
 .modal-backdrop.open{ display:flex; }
@@ -486,7 +486,7 @@ img{ max-width: 100%; display:block; }
 .modal-close{ background: var(--surface); border: 2px solid var(--pixel-ink); font-size:1.1rem; color: var(--on-surface); padding: 2px 8px; }
 .form-group{ margin-bottom:0.9rem; }
 .form-group label{
-  display:block; font-family: var(--font-mono); font-weight:700; font-size:0.75rem;
+  display:block; font-family: var(--font-mono); font-weight:700; font-size:0.78rem;
   text-transform: uppercase; letter-spacing: 0.02em;
   margin-bottom:0.35rem;
 }
@@ -540,14 +540,14 @@ svg{ display:block; }
 .fab-menu button svg{ width:16px; height:16px; color: var(--secondary); flex-shrink:0; }
 
 /* ===== Form Validation ===== */
-.field-error{ color: var(--deadline-red); font-family: var(--font-mono); font-size:0.72rem; margin-top:0.35rem; min-height:1em; }
+.field-error{ color: var(--deadline-red); font-family: var(--font-mono); font-size:0.78rem; margin-top:0.35rem; min-height:1em; }
 
 /* ===== Modal Tabs ===== */
 .modal-tabs{ display:flex; gap:0; margin-bottom:1.1rem; border-bottom: 2px solid var(--pixel-ink); }
 .modal-tab-btn{
   background: var(--surface); border: 2px solid var(--pixel-ink); border-bottom: none;
   padding:0.55rem 0.9rem; margin-right:0.3rem;
-  font-family: var(--font-mono); font-weight:700; font-size:0.75rem;
+  font-family: var(--font-mono); font-weight:700; font-size:0.78rem;
   text-transform: uppercase;
   color: var(--on-surface-variant); position: relative; top: 2px;
 }
@@ -568,7 +568,7 @@ svg{ display:block; }
 }
 .dropzone-icon svg{ width:22px; height:22px; }
 .dropzone p{ font-size:0.9rem; color: var(--on-surface-variant); margin-bottom:0.25rem; }
-.form-hint{ font-family: var(--font-mono); font-size:0.72rem; color: var(--on-surface-variant); }
+.form-hint{ font-family: var(--font-mono); font-size:0.78rem; color: var(--on-surface-variant); }
 #dropzonePreviewWrap{ position:relative; display:inline-block; }
 #dropzonePreview{ max-width:100%; max-height:220px; display:block; margin:0 auto; border: 2px solid var(--pixel-ink); image-rendering: pixelated; }
 #removePreviewBtn{ position:absolute; top:-10px; right:-10px; background: var(--tertiary-tint); color: var(--tertiary); border-color: var(--pixel-ink); }
@@ -591,7 +591,7 @@ svg{ display:block; }
   0%{ background-position: 0 0; }
   100%{ background-position: 22px 0; }
 }
-.upload-progress-label{ font-family: var(--font-mono); font-size:0.72rem; color: var(--on-surface-variant); font-weight:700; }
+.upload-progress-label{ font-family: var(--font-mono); font-size:0.78rem; color: var(--on-surface-variant); font-weight:700; }
 
 /* ===== Confirm / Warning Modal Icon ===== */
 .confirm-icon{
@@ -618,7 +618,7 @@ svg{ display:block; }
 .activity-icon.delete{ background: var(--tertiary-tint); color: var(--tertiary); }
 .activity-icon.create{ background: var(--secondary-tint); color: var(--secondary-dark); }
 .activity-icon.update{ background: var(--primary-tint); color: var(--on-surface); }
-.activity-meta{ font-family: var(--font-mono); font-size:0.72rem; color: var(--on-surface-variant); margin-top:0.15rem; }
+.activity-meta{ font-family: var(--font-mono); font-size:0.78rem; color: var(--on-surface-variant); margin-top:0.15rem; }
 
 /* ===== Settings Rows ===== */
 .settings-row{
@@ -626,7 +626,7 @@ svg{ display:block; }
   padding:0.9rem 0; border-bottom: 2px solid var(--pixel-ink); flex-wrap:wrap;
 }
 .settings-row:last-child{ border-bottom:none; }
-.settings-label{ font-family: var(--font-display); font-weight:700; font-size:0.9rem; margin-bottom:0.15rem; }
+.settings-label{ font-family: var(--font-body); font-weight:700; font-size:0.9rem; margin-bottom:0.15rem; }
 .settings-row select{
   border: 2px solid var(--pixel-ink);
   padding:0.5rem 0.7rem; background: var(--surface); color: var(--on-surface);
