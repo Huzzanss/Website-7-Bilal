@@ -46,6 +46,8 @@ let tasks = [];
 let gallery = [];
 let activityLog = [];
 let feedbackList = [];
+let piketData = {};
+const PIKET_DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
 let editingAnnouncementId = null;
 let editingTaskId = null;
@@ -126,8 +128,16 @@ async function loadFeedback() {
   } catch (err) { console.error("Gagal memuat masukan:", err); }
 }
 
+async function loadPiket() {
+  try {
+    const res = await apiFetch("/piket");
+    piketData = await res.json();
+    renderPiketAdmin();
+  } catch (err) { console.error("Gagal memuat jadwal piket:", err); }
+}
+
 async function loadAll() {
-  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog(), loadFeedback()]);
+  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog(), loadFeedback(), loadPiket()]);
 }
 
 function relativeTime(ts) {
@@ -310,6 +320,44 @@ function confirmDeleteFeedback(id) {
       }
     }
   );
+}
+
+/* ===== RENDER & SIMPAN: PIKET GULUNG SAJADAH ===== */
+function renderPiketAdmin() {
+  const wrap = document.getElementById("piketAdminList");
+  if (!wrap) return;
+  wrap.innerHTML = PIKET_DAYS.map(day => {
+    const entry = piketData[day] || {};
+    return `
+      <div class="form-group" style="display:flex; gap:0.5rem; align-items:flex-end;">
+        <div style="flex:1;">
+          <label for="piketNames_${day}">${day}</label>
+          <input type="text" id="piketNames_${day}" value="${escapeAttr(entry.names || "")}" placeholder="Nama petugas, pisahkan koma">
+        </div>
+        <button type="button" class="btn btn-secondary" style="height:44px;" onclick="savePiketDay('${day}')">Simpan</button>
+      </div>
+    `;
+  }).join("");
+}
+
+async function savePiketDay(day) {
+  const input = document.getElementById(`piketNames_${day}`);
+  if (!input) return;
+  const names = input.value.trim();
+  try {
+    const res = await apiFetch(`/piket/${day}`, {
+      method: "PUT",
+      body: JSON.stringify({ names, note: "" }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(`Piket hari ${day} disimpan!`);
+      loadPiket();
+      loadActivityLog();
+    } else {
+      showToast(result.message || "Gagal menyimpan jadwal piket.");
+    }
+  } catch (err) { /* apiFetch already redirects on 401 */ }
 }
 
 /* ===== CRUD: PENGUMUMAN ===== */

@@ -215,6 +215,34 @@ function renderSchedule(){
   `).join("");
 }
 
+/* PIKET GULUNG SAJADAH (BALLROOM) */
+let piketData = {};
+
+async function loadPiket(){
+  try {
+    const res = await fetch(`${API_BASE}/piket`);
+    piketData = await res.json();
+    renderPiket();
+  } catch (err) {
+    console.error("Gagal memuat jadwal piket:", err);
+  }
+}
+
+function renderPiket(){
+  const wrap = document.getElementById("piketWrap");
+  if (!wrap) return;
+  wrap.innerHTML = DAYS.map(day => {
+    const entry = piketData[day];
+    const names = entry && entry.names ? entry.names : "Belum diatur";
+    return `
+      <div class="schedule-row">
+        <span class="schedule-time">${day}</span>
+        <span class="schedule-subject">${escapeHTML(names)}</span>
+      </div>
+    `;
+  }).join("");
+}
+
 /* AMBIL DATA TUGAS DARI REST API */
 async function loadTasks(){
   try {
@@ -652,9 +680,11 @@ loadAnnouncements();
 loadTasks();
 loadGallery();
 loadFeedbackPublic();
+loadPiket();
 setInterval(() => {
   loadAnnouncements();
   loadTasks();
   loadGallery();
   loadFeedbackPublic();
+  loadPiket();
 }, 20000);
