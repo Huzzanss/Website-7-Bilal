@@ -263,10 +263,10 @@ function renderFeedback() {
   const badge = document.getElementById("feedbackUnreadBadge");
   if (!list) return;
 
-  const unreadCount = feedbackList.filter(f => !f.read).length;
+  const pendingCount = feedbackList.filter(f => !f.approved).length;
   if (badge) {
-    if (unreadCount > 0) {
-      badge.textContent = `${unreadCount} Belum Dibaca`;
+    if (pendingCount > 0) {
+      badge.textContent = `${pendingCount} Menunggu Persetujuan`;
       badge.style.display = "inline-block";
     } else {
       badge.style.display = "none";
@@ -279,13 +279,23 @@ function renderFeedback() {
   }
 
   list.innerHTML = feedbackList.map(f => `
-    <div class="announcement-item admin-card-item" style="${f.read ? "" : "border-color: var(--primary-dark);"}">
+    <div class="announcement-item admin-card-item" style="${f.approved ? "" : "border-color: var(--tertiary);"}">
       <div class="a-body">
-        <strong>${escapeHTML(f.name || "Anonim")}${f.read ? "" : ' <span class="admin-chip">Baru</span>'}</strong>
+        <strong>
+          ${escapeHTML(f.name || "Anonim")}
+          ${!f.approved ? ' <span class="admin-chip" style="background:var(--tertiary-tint); color:var(--tertiary);">Menunggu Persetujuan</span>' : ""}
+          ${f.approved && !f.read ? ' <span class="admin-chip">Baru</span>' : ""}
+        </strong>
         <p>${escapeHTML(f.message)}</p>
         <span class="a-date">${relativeTime(f.createdAt)}</span>
       </div>
       <div class="action-btns" style="display:flex; gap:0.4rem; align-items:flex-start;">
+        <button class="btn-icon" onclick="toggleFeedbackApprove('${f.id}')" title="${f.approved ? "Sembunyikan dari publik" : "Setujui & tayangkan"}">
+          ${f.approved
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-10-8-10-8a18.5 18.5 0 0 1 4.22-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>'
+          }
+        </button>
         <button class="btn-icon" onclick="toggleFeedbackRead('${f.id}')" title="${f.read ? "Tandai belum dibaca" : "Tandai sudah dibaca"}">
           ${f.read
             ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
@@ -296,6 +306,18 @@ function renderFeedback() {
       </div>
     </div>
   `).join("");
+}
+
+async function toggleFeedbackApprove(id) {
+  try {
+    const res = await apiFetch(`/feedback/${id}/approve`, { method: "PATCH" });
+    const result = await res.json();
+    if (result.success) {
+      showToast(result.approved ? "Masukan disetujui, sekarang tayang publik!" : "Masukan disembunyikan dari publik.");
+      loadFeedback();
+      loadActivityLog();
+    }
+  } catch (err) { /* apiFetch already redirects on 401 */ }
 }
 
 async function toggleFeedbackRead(id) {
@@ -758,6 +780,27 @@ function startSessionCountdown(seconds) {
   }, 1000);
 }
 
+/* ===== BACKUP / EXPORT DATA ===== */
+async function exportBackup() {
+  try {
+    const res = await apiFetch("/backup");
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = new Date().toISOString().split("T")[0];
+    a.href = url;
+    a.download = `backup-kelas-vii-bilal-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast("Backup berhasil diunduh!");
+  } catch (err) {
+    showToast("Gagal membuat backup.");
+  }
+}
+
 /* ===== INITIALIZATION ===== */
 document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.remove("auth-pending");
@@ -846,6 +889,10 @@ document.addEventListener("DOMContentLoaded", () => {
     resetIdleTimer();
     showToast(`Auto-logout diatur ke ${idleTimeoutMinutes} menit.`);
   });
+
+  // Settings: export backup
+  const exportBtn = document.getElementById("exportBackupBtn");
+  if (exportBtn) exportBtn.addEventListener("click", exportBackup);
 
   // Settings: clear activity log
   document.getElementById("clearLogBtn").addEventListener("click", () => {
