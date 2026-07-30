@@ -215,6 +215,34 @@ function renderSchedule(){
   `).join("");
 }
 
+/* PIKET KELAS (HARIAN) */
+let piketKelasData = {};
+
+async function loadPiketKelas(){
+  try {
+    const res = await fetch(`${API_BASE}/piket-kelas`);
+    piketKelasData = await res.json();
+    renderPiketKelas();
+  } catch (err) {
+    console.error("Gagal memuat jadwal piket kelas:", err);
+  }
+}
+
+function renderPiketKelas(){
+  const wrap = document.getElementById("piketKelasWrap");
+  if (!wrap) return;
+  wrap.innerHTML = DAYS.map(day => {
+    const entry = piketKelasData[day];
+    const names = entry && entry.names ? entry.names : "Belum diatur";
+    return `
+      <div class="schedule-row">
+        <span class="schedule-time">${day}</span>
+        <span class="schedule-subject">${escapeHTML(names)}</span>
+      </div>
+    `;
+  }).join("");
+}
+
 /* PIKET GULUNG SAJADAH (BALLROOM) */
 let piketData = {};
 
@@ -680,11 +708,13 @@ loadAnnouncements();
 loadTasks();
 loadGallery();
 loadFeedbackPublic();
+loadPiketKelas();
 loadPiket();
 setInterval(() => {
   loadAnnouncements();
   loadTasks();
   loadGallery();
   loadFeedbackPublic();
+  loadPiketKelas();
   loadPiket();
 }, 20000);

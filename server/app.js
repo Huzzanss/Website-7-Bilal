@@ -13,6 +13,7 @@ const galleryRoutes = require("./routes/gallery");
 const activityLogRoutes = require("./routes/activityLog");
 const feedbackRoutes = require("./routes/feedback");
 const piketRoutes = require("./routes/piket");
+const piketKelasRoutes = require("./routes/piketKelas");
 const backupRoutes = require("./routes/backup");
 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/gallery", galleryRoutes);
 app.use("/api/activity-log", activityLogRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/piket", piketRoutes);
+app.use("/api/piket-kelas", piketKelasRoutes);
 app.use("/api/backup", backupRoutes);
 
 module.exports = app;
