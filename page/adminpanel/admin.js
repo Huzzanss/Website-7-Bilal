@@ -753,6 +753,212 @@ async function exportBackup() {
   }
 }
 
+/* ===== TERMINAL CLI ADMIN ===== */
+// Command-line interface untuk aksi admin cepat tanpa klik tombol.
+// Setelah "list <tipe>", item bisa dirujuk pakai nomor urut (bukan cuma ID panjang).
+const cliListCache = { announcements: [], tasks: [], gallery: [], feedback: [] };
+const cliHistory = [];
+let cliHistoryIndex = -1;
+
+function cliPrint(text, cls) {
+  const output = document.getElementById("cliOutput");
+  if (!output) return;
+  const line = document.createElement("div");
+  if (cls) line.className = cls;
+  line.textContent = text;
+  output.appendChild(line);
+  output.scrollTop = output.scrollHeight;
+}
+
+function cliParseArgs(str) {
+  const args = [];
+  const regex = /"([^"]*)"|(\S+)/g;
+  let match;
+  while ((match = regex.exec(str)) !== null) {
+    args.push(match[1] !== undefined ? match[1] : match[2]);
+  }
+  return args;
+}
+
+function cliResolveId(type, ref) {
+  if (/^\d+$/.test(ref)) {
+    const idx = parseInt(ref, 10) - 1;
+    const cached = cliListCache[type];
+    return (cached && cached[idx]) || null;
+  }
+  return ref;
+}
+
+const CLI_COMMANDS = {
+  help() {
+    cliPrint("Perintah yang tersedia:");
+    cliPrint('  list <announcements|tasks|gallery|feedback|log>');
+    cliPrint('  announce "Judul" "Isi"                          - buat pengumuman');
+    cliPrint('  task "Mapel" "Judul" YYYY-MM-DD ["Deskripsi"]     - buat tugas');
+    cliPrint('  done <no/id>                                    - toggle status selesai/berjalan');
+    cliPrint('  approve <no/id>                                 - setujui masukan biar tayang');
+    cliPrint('  rm <announcement|task|gallery|feedback> <no/id>  - hapus item');
+    cliPrint('  backup                                          - unduh backup data (JSON)');
+    cliPrint('  theme <dark|light>                              - ganti tema');
+    cliPrint('  clear                                           - bersihkan layar');
+    cliPrint('  logout                                          - keluar dari admin panel');
+    cliPrint("Tips: setelah 'list', pakai nomor urut (bukan ID panjang) di perintah lain.");
+  },
+
+  list(args) {
+    const type = args[0];
+    if (type === "announcements") {
+      cliListCache.announcements = announcements.map(a => a.id);
+      if (!announcements.length) return cliPrint("(kosong)");
+      announcements.forEach((a, i) => cliPrint(`${i + 1}. ${a.title}`));
+    } else if (type === "tasks") {
+      cliListCache.tasks = tasks.map(t => t.id);
+      if (!tasks.length) return cliPrint("(kosong)");
+      tasks.forEach((t, i) => cliPrint(`${i + 1}. [${t.subject}] ${t.title} - ${t.status}, tenggat ${t.deadline}`));
+    } else if (type === "gallery") {
+      cliListCache.gallery = gallery.map(g => g.id);
+      if (!gallery.length) return cliPrint("(kosong)");
+      gallery.forEach((g, i) => cliPrint(`${i + 1}. foto galeri`));
+    } else if (type === "feedback") {
+      cliListCache.feedback = feedbackList.map(f => f.id);
+      if (!feedbackList.length) return cliPrint("(kosong)");
+      feedbackList.forEach((f, i) => cliPrint(`${i + 1}. ${f.approved ? "[tayang]" : "[menunggu]"} ${f.name}: ${f.message.slice(0, 60)}`));
+    } else if (type === "log") {
+      if (!activityLog.length) return cliPrint("(kosong)");
+      activityLog.slice(0, 10).forEach(a => cliPrint(`- ${a.label} (${relativeTime(a.timestamp)})`));
+    } else {
+      cliPrint("Tipe tidak dikenal. Coba: announcements, tasks, gallery, feedback, log", "cli-error");
+    }
+  },
+
+  async announce(args) {
+    const [title, body] = args;
+    if (!title) return cliPrint('Format: announce "Judul" "Isi"', "cli-error");
+    const res = await apiFetch("/announcements", {
+      method: "POST",
+      body: JSON.stringify({ title, body: body || "" }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      cliPrint(`OK. Pengumuman "${title}" dibuat.`, "cli-ok");
+      loadAnnouncements(); loadActivityLog();
+    } else {
+      cliPrint(result.message || "Gagal.", "cli-error");
+    }
+  },
+
+  async task(args) {
+    const [subject, title, deadline, desc] = args;
+    if (!subject || !title || !deadline) return cliPrint('Format: task "Mapel" "Judul" YYYY-MM-DD ["Deskripsi"]', "cli-error");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return cliPrint("Format tanggal harus YYYY-MM-DD.", "cli-error");
+    const res = await apiFetch("/tasks", {
+      method: "POST",
+      body: JSON.stringify({ subject, title, deadline, desc: desc || "", status: "berjalan" }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      cliPrint(`OK. Tugas "${title}" dibuat.`, "cli-ok");
+      loadTasks(); loadActivityLog();
+    } else {
+      cliPrint(result.message || "Gagal.", "cli-error");
+    }
+  },
+
+  async done(args) {
+    const ref = args[0];
+    if (!ref) return cliPrint("Format: done <no/id tugas>", "cli-error");
+    const id = cliResolveId("tasks", ref);
+    if (!id) return cliPrint("Tugas tidak ditemukan. Jalankan 'list tasks' dulu.", "cli-error");
+    const res = await apiFetch(`/tasks/${id}/status`, { method: "PATCH" });
+    const result = await res.json();
+    if (result.success) {
+      cliPrint(`OK. Status tugas sekarang: ${result.status}.`, "cli-ok");
+      loadTasks(); loadActivityLog();
+    } else {
+      cliPrint(result.message || "Gagal.", "cli-error");
+    }
+  },
+
+  async approve(args) {
+    const ref = args[0];
+    if (!ref) return cliPrint("Format: approve <no/id masukan>", "cli-error");
+    const id = cliResolveId("feedback", ref);
+    if (!id) return cliPrint("Masukan tidak ditemukan. Jalankan 'list feedback' dulu.", "cli-error");
+    const res = await apiFetch(`/feedback/${id}/approve`, { method: "PATCH" });
+    const result = await res.json();
+    if (result.success) {
+      cliPrint(`OK. Status: ${result.approved ? "tayang publik" : "disembunyikan"}.`, "cli-ok");
+      loadFeedback(); loadActivityLog();
+    } else {
+      cliPrint(result.message || "Gagal.", "cli-error");
+    }
+  },
+
+  async rm(args) {
+    const [type, ref] = args;
+    const endpointMap = { announcement: "announcements", task: "tasks", gallery: "gallery", feedback: "feedback" };
+    const endpoint = endpointMap[type];
+    if (!endpoint || !ref) return cliPrint("Format: rm <announcement|task|gallery|feedback> <no/id>", "cli-error");
+    const id = cliResolveId(endpoint, ref);
+    if (!id) return cliPrint("Item tidak ditemukan. Jalankan 'list' dulu.", "cli-error");
+    const res = await apiFetch(`/${endpoint}/${id}`, { method: "DELETE" });
+    const result = await res.json();
+    if (result.success) {
+      cliPrint(`OK. ${type} dihapus.`, "cli-ok");
+      loadAll();
+    } else {
+      cliPrint(result.message || "Gagal.", "cli-error");
+    }
+  },
+
+  backup() {
+    exportBackup();
+    cliPrint("Mengunduh backup...", "cli-ok");
+  },
+
+  theme(args) {
+    const mode = args[0];
+    if (mode !== "dark" && mode !== "light") return cliPrint("Format: theme <dark|light>", "cli-error");
+    applyTheme(mode);
+    cliPrint(`OK. Tema diganti ke ${mode}.`, "cli-ok");
+  },
+
+  clear() {
+    const output = document.getElementById("cliOutput");
+    if (output) output.innerHTML = "";
+  },
+
+  logout() {
+    cliPrint("Keluar...", "cli-ok");
+    setTimeout(logoutAdmin, 400);
+  },
+
+  whoami() {
+    cliPrint("admin");
+  },
+};
+
+async function cliExecute(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) return;
+  cliPrint(`> ${trimmed}`, "cli-cmd");
+
+  const parts = cliParseArgs(trimmed);
+  const cmdName = (parts.shift() || "").toLowerCase();
+  const handler = CLI_COMMANDS[cmdName];
+
+  if (!handler) {
+    cliPrint(`Perintah tidak dikenal: "${cmdName}". Ketik "help" untuk daftar perintah.`, "cli-error");
+    return;
+  }
+
+  try {
+    await handler(parts);
+  } catch (err) {
+    cliPrint("Terjadi kesalahan menjalankan perintah.", "cli-error");
+  }
+}
+
 /* ===== INITIALIZATION ===== */
 document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.remove("auth-pending");
@@ -864,4 +1070,54 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === backdrop) backdrop.classList.remove("open");
     });
   });
+
+  // Terminal CLI
+  const cliToggleBtn = document.getElementById("cliToggleBtn");
+  const cliPanel = document.getElementById("cliPanel");
+  const cliCloseBtn = document.getElementById("cliCloseBtn");
+  const cliInput = document.getElementById("cliInput");
+
+  if (cliToggleBtn && cliPanel) {
+    cliToggleBtn.addEventListener("click", () => {
+      cliPanel.classList.toggle("open");
+      if (cliPanel.classList.contains("open")) {
+        if (!cliPanel.dataset.welcomed) {
+          cliPrint('Terminal Admin siap. Ketik "help" untuk daftar perintah.');
+          cliPanel.dataset.welcomed = "1";
+        }
+        cliInput.focus();
+      }
+    });
+  }
+  if (cliCloseBtn && cliPanel) {
+    cliCloseBtn.addEventListener("click", () => cliPanel.classList.remove("open"));
+  }
+  if (cliInput) {
+    cliInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const value = cliInput.value;
+        if (value.trim()) {
+          cliHistory.push(value);
+          cliHistoryIndex = cliHistory.length;
+        }
+        cliInput.value = "";
+        cliExecute(value);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (cliHistoryIndex > 0) {
+          cliHistoryIndex--;
+          cliInput.value = cliHistory[cliHistoryIndex] || "";
+        }
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (cliHistoryIndex < cliHistory.length - 1) {
+          cliHistoryIndex++;
+          cliInput.value = cliHistory[cliHistoryIndex] || "";
+        } else {
+          cliHistoryIndex = cliHistory.length;
+          cliInput.value = "";
+        }
+      }
+    });
+  }
 });
