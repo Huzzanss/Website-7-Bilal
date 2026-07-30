@@ -46,26 +46,6 @@ let tasks = [];
 let gallery = [];
 let activityLog = [];
 let feedbackList = [];
-let piketData = {};
-let piketKelasData = {};
-const PIKET_DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
-
-// Data yang kamu berikan, dipakai sebagai isian default form di bawah kalau
-// hari itu belum pernah disimpan ke database — tinggal klik "Simpan Semua".
-const DEFAULT_PIKET_KELAS = {
-  Senin: "Faalih, Almer, Aca (Junot), Atha",
-  Selasa: "Hafidz, Al Ghazali, Fatih, Azka",
-  Rabu: "Izzi, Icad, Faezya (Ezra)",
-  Kamis: "Faqih, Hafi, Indra",
-  Jumat: "Alfin, Syatir, Alkhalifi (Lifi), Dzaki",
-};
-const DEFAULT_PIKET_BALLROOM = {
-  Senin: "Salman Al Farisi, Aisyah Binti Abu Bakar",
-  Selasa: "Amru Bin Ash, Hafsah Binti Umar",
-  Rabu: "Thoriq Bin Ziyad, Fatimah Az Zahra, Khansa Binti Amr",
-  Kamis: "Khalid Bin Walid, Khadijah Binti Khuwailid, Halimah Assa'diyah",
-  Jumat: "Bilal Bin Rabbah, Mus'ab Bin Umair, Zainab Binti Muhammad",
-};
 
 let editingAnnouncementId = null;
 let editingTaskId = null;
@@ -146,24 +126,8 @@ async function loadFeedback() {
   } catch (err) { console.error("Gagal memuat masukan:", err); }
 }
 
-async function loadPiket() {
-  try {
-    const res = await apiFetch("/piket");
-    piketData = await res.json();
-    renderPiketAdmin();
-  } catch (err) { console.error("Gagal memuat jadwal piket:", err); }
-}
-
-async function loadPiketKelas() {
-  try {
-    const res = await apiFetch("/piket-kelas");
-    piketKelasData = await res.json();
-    renderPiketKelasAdmin();
-  } catch (err) { console.error("Gagal memuat jadwal piket kelas:", err); }
-}
-
 async function loadAll() {
-  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog(), loadFeedback(), loadPiket(), loadPiketKelas()]);
+  await Promise.all([loadAnnouncements(), loadTasks(), loadGallery(), loadActivityLog(), loadFeedback()]);
 }
 
 function relativeTime(ts) {
@@ -368,128 +332,6 @@ function confirmDeleteFeedback(id) {
       }
     }
   );
-}
-
-/* ===== RENDER & SIMPAN: PIKET GULUNG SAJADAH ===== */
-function renderPiketAdmin() {
-  const wrap = document.getElementById("piketAdminList");
-  if (!wrap) return;
-  wrap.innerHTML = PIKET_DAYS.map(day => {
-    const entry = piketData[day] || {};
-    const value = entry.names || DEFAULT_PIKET_BALLROOM[day] || "";
-    return `
-      <div class="form-group" style="display:flex; gap:0.5rem; align-items:flex-end;">
-        <div style="flex:1;">
-          <label for="piketNames_${day}">${day}</label>
-          <input type="text" id="piketNames_${day}" value="${escapeAttr(value)}" placeholder="Nama kelas, pisahkan koma">
-        </div>
-        <button type="button" class="btn btn-secondary" style="height:44px;" onclick="savePiketDay('${day}')">Simpan</button>
-      </div>
-    `;
-  }).join("");
-}
-
-async function savePiketDay(day) {
-  const input = document.getElementById(`piketNames_${day}`);
-  if (!input) return;
-  const names = input.value.trim();
-  try {
-    const res = await apiFetch(`/piket/${day}`, {
-      method: "PUT",
-      body: JSON.stringify({ names, note: "" }),
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast(`Piket hari ${day} disimpan!`);
-      loadPiket();
-      loadActivityLog();
-    } else {
-      showToast(result.message || "Gagal menyimpan jadwal piket.");
-    }
-  } catch (err) { /* apiFetch already redirects on 401 */ }
-}
-
-async function saveAllPiket() {
-  const btn = document.getElementById("saveAllPiketBtn");
-  if (btn) btn.disabled = true;
-  try {
-    for (const day of PIKET_DAYS) {
-      const input = document.getElementById(`piketNames_${day}`);
-      if (!input) continue;
-      await apiFetch(`/piket/${day}`, {
-        method: "PUT",
-        body: JSON.stringify({ names: input.value.trim(), note: "" }),
-      });
-    }
-    showToast("Semua jadwal piket ballroom disimpan!");
-    loadPiket();
-    loadActivityLog();
-  } catch (err) {
-    // apiFetch already redirects on 401
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-
-/* ===== RENDER & SIMPAN: PIKET KELAS ===== */
-function renderPiketKelasAdmin() {
-  const wrap = document.getElementById("piketKelasAdminList");
-  if (!wrap) return;
-  wrap.innerHTML = PIKET_DAYS.map(day => {
-    const entry = piketKelasData[day] || {};
-    const value = entry.names || DEFAULT_PIKET_KELAS[day] || "";
-    return `
-      <div class="form-group" style="display:flex; gap:0.5rem; align-items:flex-end;">
-        <div style="flex:1;">
-          <label for="piketKelasNames_${day}">${day}</label>
-          <input type="text" id="piketKelasNames_${day}" value="${escapeAttr(value)}" placeholder="Nama siswa, pisahkan koma">
-        </div>
-        <button type="button" class="btn btn-secondary" style="height:44px;" onclick="savePiketKelasDay('${day}')">Simpan</button>
-      </div>
-    `;
-  }).join("");
-}
-
-async function savePiketKelasDay(day) {
-  const input = document.getElementById(`piketKelasNames_${day}`);
-  if (!input) return;
-  const names = input.value.trim();
-  try {
-    const res = await apiFetch(`/piket-kelas/${day}`, {
-      method: "PUT",
-      body: JSON.stringify({ names }),
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast(`Piket kelas hari ${day} disimpan!`);
-      loadPiketKelas();
-      loadActivityLog();
-    } else {
-      showToast(result.message || "Gagal menyimpan jadwal piket kelas.");
-    }
-  } catch (err) { /* apiFetch already redirects on 401 */ }
-}
-
-async function saveAllPiketKelas() {
-  const btn = document.getElementById("saveAllPiketKelasBtn");
-  if (btn) btn.disabled = true;
-  try {
-    for (const day of PIKET_DAYS) {
-      const input = document.getElementById(`piketKelasNames_${day}`);
-      if (!input) continue;
-      await apiFetch(`/piket-kelas/${day}`, {
-        method: "PUT",
-        body: JSON.stringify({ names: input.value.trim() }),
-      });
-    }
-    showToast("Semua jadwal piket kelas disimpan!");
-    loadPiketKelas();
-    loadActivityLog();
-  } catch (err) {
-    // apiFetch already redirects on 401
-  } finally {
-    if (btn) btn.disabled = false;
-  }
 }
 
 /* ===== CRUD: PENGUMUMAN ===== */
@@ -1003,12 +845,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Settings: export backup
   const exportBtn = document.getElementById("exportBackupBtn");
   if (exportBtn) exportBtn.addEventListener("click", exportBackup);
-
-  // Piket: simpan semua sekaligus
-  const saveAllPiketBtn = document.getElementById("saveAllPiketBtn");
-  if (saveAllPiketBtn) saveAllPiketBtn.addEventListener("click", saveAllPiket);
-  const saveAllPiketKelasBtn = document.getElementById("saveAllPiketKelasBtn");
-  if (saveAllPiketKelasBtn) saveAllPiketKelasBtn.addEventListener("click", saveAllPiketKelas);
 
   // Settings: clear activity log
   document.getElementById("clearLogBtn").addEventListener("click", () => {

@@ -5,14 +5,15 @@ const { requireAuth } = require("../middleware/auth");
 const router = express.Router();
 
 // Admin only: dump every collection as one JSON file for a manual backup.
+// (Piket/Piket Kelas aren't included — that data lives as static constants in
+// app.js now, not in the database.)
 router.get("/", requireAuth, async (req, res) => {
   try {
-    const [announcements, tasks, gallery, feedback, piket, activityLog] = await Promise.all([
+    const [announcements, tasks, gallery, feedback, activityLog] = await Promise.all([
       db.ref("announcements").once("value"),
       db.ref("tasks").once("value"),
       db.ref("gallery").once("value"),
       db.ref("feedback").once("value"),
-      db.ref("piket").once("value"),
       db.ref("activityLog").once("value"),
     ]);
 
@@ -22,7 +23,6 @@ router.get("/", requireAuth, async (req, res) => {
       tasks: tasks.val() || {},
       gallery: gallery.val() || {},
       feedback: feedback.val() || {},
-      piket: piket.val() || {},
       activityLog: activityLog.val() || {},
     });
   } catch (err) {

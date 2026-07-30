@@ -215,60 +215,44 @@ function renderSchedule(){
   `).join("");
 }
 
-/* PIKET KELAS (HARIAN) */
-let piketKelasData = {};
-
-async function loadPiketKelas(){
-  try {
-    const res = await fetch(`${API_BASE}/piket-kelas`);
-    piketKelasData = await res.json();
-    renderPiketKelas();
-  } catch (err) {
-    console.error("Gagal memuat jadwal piket kelas:", err);
-  }
-}
+/* PIKET KELAS (HARIAN) — data tetap, diatur lewat kode, bukan admin panel */
+const PIKET_KELAS = {
+  Senin: "Faalih, Almer, Aca (Junot), Atha",
+  Selasa: "Hafidz, Al Ghazali, Fatih, Azka",
+  Rabu: "Izzi, Icad, Faezya (Ezra)",
+  Kamis: "Faqih, Hafi, Indra",
+  Jumat: "Alfin, Syatir, Alkhalifi (Lifi), Dzaki",
+};
 
 function renderPiketKelas(){
   const wrap = document.getElementById("piketKelasWrap");
   if (!wrap) return;
-  wrap.innerHTML = DAYS.map(day => {
-    const entry = piketKelasData[day];
-    const names = entry && entry.names ? entry.names : "Belum diatur";
-    return `
-      <div class="schedule-row">
-        <span class="schedule-time">${day}</span>
-        <span class="schedule-subject">${escapeHTML(names)}</span>
-      </div>
-    `;
-  }).join("");
+  wrap.innerHTML = DAYS.map(day => `
+    <div class="schedule-row">
+      <span class="schedule-time">${day}</span>
+      <span class="schedule-subject">${escapeHTML(PIKET_KELAS[day] || "Belum diatur")}</span>
+    </div>
+  `).join("");
 }
 
-/* PIKET GULUNG SAJADAH (BALLROOM) */
-let piketData = {};
-
-async function loadPiket(){
-  try {
-    const res = await fetch(`${API_BASE}/piket`);
-    piketData = await res.json();
-    renderPiket();
-  } catch (err) {
-    console.error("Gagal memuat jadwal piket:", err);
-  }
-}
+/* PIKET GULUNG SAJADAH (BALLROOM) — data tetap, diatur lewat kode, bukan admin panel */
+const PIKET_BALLROOM = {
+  Senin: "Salman Al Farisi, Aisyah Binti Abu Bakar",
+  Selasa: "Amru Bin Ash, Hafsah Binti Umar",
+  Rabu: "Thoriq Bin Ziyad, Fatimah Az Zahra, Khansa Binti Amr",
+  Kamis: "Khalid Bin Walid, Khadijah Binti Khuwailid, Halimah Assa'diyah",
+  Jumat: "Bilal Bin Rabbah, Mus'ab Bin Umair, Zainab Binti Muhammad",
+};
 
 function renderPiket(){
   const wrap = document.getElementById("piketWrap");
   if (!wrap) return;
-  wrap.innerHTML = DAYS.map(day => {
-    const entry = piketData[day];
-    const names = entry && entry.names ? entry.names : "Belum diatur";
-    return `
-      <div class="schedule-row">
-        <span class="schedule-time">${day}</span>
-        <span class="schedule-subject">${escapeHTML(names)}</span>
-      </div>
-    `;
-  }).join("");
+  wrap.innerHTML = DAYS.map(day => `
+    <div class="schedule-row">
+      <span class="schedule-time">${day}</span>
+      <span class="schedule-subject">${escapeHTML(PIKET_BALLROOM[day] || "Belum diatur")}</span>
+    </div>
+  `).join("");
 }
 
 /* AMBIL DATA TUGAS DARI REST API */
@@ -708,13 +692,11 @@ loadAnnouncements();
 loadTasks();
 loadGallery();
 loadFeedbackPublic();
-loadPiketKelas();
-loadPiket();
+renderPiketKelas();
+renderPiket();
 setInterval(() => {
   loadAnnouncements();
   loadTasks();
   loadGallery();
   loadFeedbackPublic();
-  loadPiketKelas();
-  loadPiket();
 }, 20000);
