@@ -1,14 +1,16 @@
 const express = require("express");
-const crypto = require("crypto");
-const { db, bucket, admin } = require("../config/firebaseAdmin");
+const { db, admin } = require("../config/firebaseAdmin");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Max size for the ORIGINAL image file (before base64 encoding). Base64
-// inflates size by ~33%, and Vercel's serverless functions hard-cap request
-// bodies at 4.5MB — so we keep this well under that after inflation.
-const MAX_FILE_BYTES = 3 * 1024 * 1024; // 3MB
+// Max size for the ORIGINAL image file (before base64 encoding). Kept small
+// on purpose: photos are stored as base64 text directly inside Realtime
+// Database (no Firebase Storage — that now requires the paid Blaze plan),
+// and every visit to the gallery downloads the whole "gallery" node in one
+// shot. Bigger/more photos = slower page loads and more of the free quota
+// used up, so this stays conservative.
+const MAX_FILE_BYTES = 1.5 * 1024 * 1024; // 1.5MB
 
 router.get("/", async (req, res) => {
   try {
@@ -23,13 +25,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Photos are sent as base64 inside a normal JSON body — NOT multipart/form-data.
-// multer/busboy-style streaming multipart parsing is unreliable on Vercel's
-// serverless functions (uploads hang indefinitely with no error), so we avoid
-// it entirely and reuse the same JSON body-parsing path that already works
-// fine for announcements/tasks.
+// Photos are sent as base64 inside a normal JSON body and stored as a data
+// URI directly in Realtime Database — no Firebase Storage bucket involved
+// at all, since Storage now requires the paid Blaze plan.
 router.post("/upload", requireAuth, async (req, res) => {
-  const { filename, contentType, dataBase64 } = req.body || {};
+  const { contentType, dataBase64 } = req.body || {};
 
   if (!dataBase64 || !contentType) {
     return res.status(400).json({ success: false, message: "File tidak ditemukan." });
@@ -46,33 +46,14 @@ router.post("/upload", requireAuth, async (req, res) => {
   }
 
   if (buffer.length > MAX_FILE_BYTES) {
-    return res.status(400).json({ success: false, message: "Ukuran gambar maksimal 3MB." });
+    return res.status(400).json({ success: false, message: "Ukuran gambar maksimal 1.5MB." });
   }
 
-  const safeName = (filename || "foto.jpg").replace(/\s+/g, "_");
-  const filePath = `gallery/${Date.now()}_${safeName}`;
-  const fileRef = bucket.file(filePath);
-
-  // Use Firebase's own download-token scheme instead of file.makePublic().
-  // makePublic() sets an object ACL, which throws on any bucket that has
-  // "uniform bucket-level access" enabled — the default for new Firebase
-  // Storage buckets. The token scheme (same one the client SDK's
-  // getDownloadURL() produces) works regardless of that setting.
-  const downloadToken = crypto.randomUUID();
+  const dataUri = `data:${contentType};base64,${dataBase64}`;
 
   try {
-    await fileRef.save(buffer, {
-      metadata: {
-        contentType,
-        metadata: { firebaseStorageDownloadTokens: downloadToken },
-      },
-    });
-    const encodedPath = encodeURIComponent(filePath);
-    const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${downloadToken}`;
-
     const ref = await db.ref("gallery").push({
-      url,
-      path: filePath,
+      url: dataUri,
       createdAt: admin.database.ServerValue.TIMESTAMP,
     });
     await db.ref("activityLog").push({
@@ -80,10 +61,10 @@ router.post("/upload", requireAuth, async (req, res) => {
       label: "Menambahkan foto ke galeri",
       timestamp: admin.database.ServerValue.TIMESTAMP,
     });
-    res.json({ success: true, id: ref.key, url });
+    res.json({ success: true, id: ref.key });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Gagal mengunggah foto: " + err.message });
+    res.status(500).json({ success: false, message: "Gagal menyimpan foto: " + err.message });
   }
 });
 
@@ -114,12 +95,7 @@ router.post("/url", requireAuth, async (req, res) => {
 
 router.delete("/:id", requireAuth, async (req, res) => {
   try {
-    const snap = await db.ref(`gallery/${req.params.id}`).once("value");
-    const data = snap.val();
     await db.ref(`gallery/${req.params.id}`).remove();
-    if (data && data.path) {
-      await bucket.file(data.path).delete().catch(() => {});
-    }
     await db.ref("activityLog").push({
       action: "delete",
       label: "Menghapus foto galeri",

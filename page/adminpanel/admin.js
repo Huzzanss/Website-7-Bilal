@@ -602,8 +602,8 @@ function handleFileSelected(file) {
     showToast("File harus berupa gambar.");
     return;
   }
-  if (file.size > 3 * 1024 * 1024) {
-    showToast("Ukuran gambar maksimal 3MB.");
+  if (file.size > 1.5 * 1024 * 1024) {
+    showToast("Ukuran gambar maksimal 1.5MB.");
     return;
   }
   selectedGalleryFile = file;
