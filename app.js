@@ -513,16 +513,33 @@ async function loadGallery(){
 
 function renderGallery(){
   const grid = document.getElementById("galleryGrid");
-  if (!grid) return;
+  if (grid) {
+    if (!gallery.length){
+      grid.innerHTML = `<div class="gallery-empty">Belum ada foto kegiatan.</div>`;
+    } else {
+      grid.innerHTML = gallery.map(g => `
+        <div class="gallery-item">
+          <img src="${g.url}" alt="Dokumentasi kelas" loading="lazy" onclick="openLightbox('${escapeAttr(g.url)}')">
+        </div>
+      `).join("");
+    }
+  }
+  renderFeaturedPhoto();
+}
+
+/* FOTO PILIHAN HARI INI (berganti otomatis tiap hari, sama untuk semua orang) */
+function renderFeaturedPhoto(){
+  const wrap = document.getElementById("featuredPhotoWrap");
+  if (!wrap) return;
   if (!gallery.length){
-    grid.innerHTML = `<div class="gallery-empty">Belum ada foto kegiatan.</div>`;
+    wrap.style.display = "none";
     return;
   }
-  grid.innerHTML = gallery.map(g => `
-    <div class="gallery-item">
-      <img src="${g.url}" alt="Dokumentasi kelas" loading="lazy" onclick="openLightbox('${escapeAttr(g.url)}')">
-    </div>
-  `).join("");
+  const start = new Date(new Date().getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((new Date() - start) / 86400000);
+  const photo = gallery[dayOfYear % gallery.length];
+  wrap.querySelector("img").src = photo.url;
+  wrap.style.display = "block";
 }
 
 /* LIGHTBOX (TAMPILAN PENUH FOTO GALERI) */
@@ -543,6 +560,183 @@ document.getElementById("lightboxBackdrop")?.addEventListener("click", (e) => {
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeLightbox();
 });
+
+/* CETAK JADWAL & PIKET (jadi PDF/gambar lewat dialog print browser) */
+function buildPrintHTML(){
+  const today = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+
+  const scheduleTables = DAYS.map(day => {
+    const rows = SCHEDULE[day] || [];
+    return `
+      <h3>${day}</h3>
+      <table class="print-table">
+        <thead><tr><th style="width:22%;">Waktu</th><th>Kegiatan / Mata Pelajaran</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr><td>${escapeHTML(r.time)}</td><td>${escapeHTML(r.subject)}</td></tr>`).join("")}
+        </tbody>
+      </table>
+    `;
+  }).join("");
+
+  const piketKelasRows = DAYS.map(day => `<tr><td>${day}</td><td>${escapeHTML(PIKET_KELAS[day] || "Belum diatur")}</td></tr>`).join("");
+  const piketBallroomRows = DAYS.map(day => `<tr><td>${day}</td><td>${escapeHTML(PIKET_BALLROOM[day] || "Belum diatur")}</td></tr>`).join("");
+
+  return `
+    <div class="print-page">
+      <div class="print-header">
+        <img src="${CLASS_ICON}" alt="Logo Kelas">
+        <div>
+          <h1>Kelas VII Bilal bin Rabbah</h1>
+          <p>SMP Islam Bunga Bangsa</p>
+        </div>
+      </div>
+
+      <h2>Jadwal Pelajaran</h2>
+      ${scheduleTables}
+
+      <h2>Piket Kelas</h2>
+      <table class="print-table">
+        <thead><tr><th style="width:22%;">Hari</th><th>Petugas</th></tr></thead>
+        <tbody>${piketKelasRows}</tbody>
+      </table>
+
+      <h2>Piket Gulung Sajadah (Ballroom)</h2>
+      <table class="print-table">
+        <thead><tr><th style="width:22%;">Hari</th><th>Kelas Bertugas</th></tr></thead>
+        <tbody>${piketBallroomRows}</tbody>
+      </table>
+
+      <p class="print-footer">Dicetak dari website kelas pada ${today}</p>
+    </div>
+  `;
+}
+
+const printScheduleBtn = document.getElementById("printScheduleBtn");
+if (printScheduleBtn){
+  printScheduleBtn.addEventListener("click", () => {
+    const printArea = document.getElementById("printArea");
+    if (!printArea) return;
+    printArea.innerHTML = buildPrintHTML();
+    document.body.classList.add("printing");
+    window.print();
+  });
+}
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("printing");
+});
+
+/* NPC WALI KELAS (bubble chat mengambang, isinya dari data tugas & piket asli) */
+function getNpcMessages(){
+  const messages = [];
+  const jsDay = new Date().getDay(); // 0=Minggu..6=Sabtu
+  const todayName = (jsDay >= 1 && jsDay <= 5) ? DAYS[jsDay - 1] : null;
+
+  if (todayName){
+    if (PIKET_KELAS[todayName]) messages.push(`Piket kelas hari ini: ${PIKET_KELAS[todayName]}. Jangan lupa ya!`);
+    if (PIKET_BALLROOM[todayName]) messages.push(`Piket gulung sajadah hari ini giliran kelas: ${PIKET_BALLROOM[todayName]}.`);
+  }
+
+  tasks
+    .filter(t => t.status !== "selesai" && daysUntilDeadline(t.deadline) >= 0 && daysUntilDeadline(t.deadline) <= 1)
+    .forEach(t => messages.push(`Jangan lupa, ${t.subject} "${t.title}" tenggatnya ${daysLeftLabel(t.deadline).toLowerCase()}!`));
+
+  messages.push(
+    "Semangat belajar hari ini! \uD83D\uDCDA",
+    "Jangan lupa sholat tepat waktu ya!",
+    "Rajin-rajin cek Papan Pengumuman!",
+    "Kelas yang rapi bikin belajar makin nyaman.",
+    "Sudah cek Kalender Tugas belum hari ini?"
+  );
+  return messages;
+}
+
+let npcMessages = [];
+let npcMessageIndex = 0;
+
+function showNextNpcMessage(){
+  const bubble = document.getElementById("npcBubble");
+  if (!bubble) return;
+  npcMessages = getNpcMessages();
+  if (!npcMessages.length) return;
+  bubble.textContent = npcMessages[npcMessageIndex % npcMessages.length];
+  npcMessageIndex++;
+}
+
+function initNpcWidget(){
+  const widget = document.getElementById("npcWidget");
+  if (!widget) return;
+  showNextNpcMessage();
+  setInterval(showNextNpcMessage, 9000);
+
+  const closeBtn = document.getElementById("npcClose");
+  if (closeBtn) closeBtn.addEventListener("click", () => widget.classList.add("npc-hidden"));
+}
+
+/* EFEK KETIK MESIN TIK PADA JUDUL HERO */
+function typewriterEffect(el, speed = 32){
+  if (!el) return;
+  const text = el.textContent;
+  el.textContent = "";
+  el.classList.add("typewriter-active");
+  let i = 0;
+  (function tick(){
+    if (i <= text.length){
+      el.textContent = text.slice(0, i);
+      i++;
+      setTimeout(tick, speed);
+    } else {
+      el.classList.remove("typewriter-active");
+    }
+  })();
+}
+
+/* BOOT SCREEN (tampil sekali per sesi browser) */
+(function initBootAndTypewriter(){
+  const bootEl = document.getElementById("bootScreen");
+  const heroTitle = document.querySelector(".hero-text h1");
+
+  function startTypewriter(){
+    if (heroTitle) typewriterEffect(heroTitle);
+  }
+
+  if (!bootEl || sessionStorage.getItem("bootShown")){
+    if (bootEl) bootEl.remove();
+    startTypewriter();
+    return;
+  }
+
+  sessionStorage.setItem("bootShown", "1");
+  if (typeof playSfx === "function") playSfx("boot");
+
+  setTimeout(() => {
+    bootEl.classList.add("boot-hide");
+    setTimeout(() => {
+      bootEl.remove();
+      startTypewriter();
+    }, 500);
+  }, 1600);
+})();
+
+/* TOGGLE EFEK SUARA & MUSIK LATAR (chiptune, mati secara default) */
+const sfxToggle = document.getElementById("sfxToggle");
+if (sfxToggle && typeof isSfxEnabled === "function"){
+  if (!isSfxEnabled()) document.documentElement.setAttribute("data-sfx", "off");
+  sfxToggle.addEventListener("click", () => {
+    const nowEnabled = !isSfxEnabled();
+    setSfxEnabled(nowEnabled);
+    document.documentElement.setAttribute("data-sfx", nowEnabled ? "on" : "off");
+    if (nowEnabled) playSfx("click");
+  });
+}
+
+const bgmToggle = document.getElementById("bgmToggle");
+if (bgmToggle && typeof toggleBgm === "function"){
+  bgmToggle.addEventListener("click", () => {
+    const playing = toggleBgm();
+    bgmToggle.classList.toggle("bgm-active", playing);
+    showToast(playing ? "\uD83C\uDFB5 Musik latar nyala" : "\uD83D\uDD07 Musik latar mati", 1400);
+  });
+}
 
 /* NAV & UTIL */
 const navToggle = document.getElementById("navToggle");
@@ -694,6 +888,7 @@ loadGallery();
 loadFeedbackPublic();
 renderPiketKelas();
 renderPiket();
+initNpcWidget();
 setInterval(() => {
   loadAnnouncements();
   loadTasks();

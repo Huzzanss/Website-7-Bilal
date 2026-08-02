@@ -152,6 +152,7 @@ img{ max-width: 100%; display:block; }
 .btn-secondary{ background: var(--surface); color: var(--on-surface); }
 .btn-secondary:hover{ background: var(--surface-alt); }
 .btn-upload{ cursor:pointer; }
+.btn-icon-label{ display:inline-flex; align-items:center; gap:0.4rem; }
 
 /* ===== Header ===== */
 .site-header{
@@ -729,4 +730,120 @@ svg{ display:block; }
   .gallery-grid{ grid-template-columns: repeat(2, 1fr); }
   .student-list{ grid-template-columns: repeat(2, 1fr); }
   .structure-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== Cetak Jadwal & Piket ===== */
+#printArea{ display:none; }
+.print-page{
+  font-family: 'Times New Roman', serif;
+  color: #000; background: #fff; padding: 1.5cm;
+}
+.print-header{
+  display:flex; align-items:center; gap:0.9rem;
+  border-bottom: 3px solid #000; padding-bottom: 0.7rem; margin-bottom: 1.1rem;
+}
+.print-header img{ width:56px; height:56px; object-fit:cover; }
+.print-header h1{ font-size: 1.3rem; margin:0; font-family: inherit; }
+.print-header p{ font-size: 0.85rem; margin:0; }
+.print-page h2{
+  font-family: inherit; font-size: 1.05rem; margin: 1.2rem 0 0.5rem;
+  text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 0.2rem;
+}
+.print-page h3{ font-family: inherit; font-size: 0.95rem; margin: 0.8rem 0 0.3rem; }
+.print-table{
+  width:100%; border-collapse: collapse; margin-bottom: 0.6rem; font-size: 0.82rem;
+  page-break-inside: avoid;
+}
+.print-table th, .print-table td{
+  border: 1px solid #000; padding: 0.25rem 0.5rem; text-align:left;
+}
+.print-table th{ background: #eee; }
+.print-footer{ margin-top: 1.2rem; font-size: 0.72rem; text-align:right; }
+
+@media print{
+  body.printing > *:not(#printArea){ display:none !important; }
+  body.printing #printArea{ display:block !important; }
+  @page{ margin: 1cm; }
+}
+
+/* ===== Boot Screen ===== */
+.boot-screen{
+  position: fixed; inset: 0; z-index: 200;
+  background: #0b0f0d; color: #4ae183;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--font-mono);
+  transition: opacity .5s ease;
+}
+.boot-screen.boot-hide{ opacity: 0; pointer-events: none; }
+.boot-content{ text-align:center; padding: 1.5rem; }
+.boot-logo{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:64px; height:64px; margin: 0 auto 1rem;
+  border: 3px solid #4ae183; color:#fad02c;
+  font-family: var(--font-display); font-weight:700; font-size:1.1rem;
+}
+.boot-title{ font-size: 1rem; font-weight:700; letter-spacing:0.06em; margin-bottom:0.3rem; }
+.boot-subtitle{ font-size: 0.72rem; color:#6fae86; letter-spacing:0.08em; margin-bottom:1.4rem; }
+.boot-bar{
+  width: 220px; max-width: 60vw; height: 12px; margin: 0 auto 0.7rem;
+  border: 2px solid #4ae183; overflow:hidden;
+}
+.boot-bar-fill{
+  height:100%; width:0%; background:#4ae183;
+  animation: bootFill 1.5s steps(20) forwards;
+}
+@keyframes bootFill{ to{ width:100%; } }
+.boot-loading{ font-size:0.7rem; letter-spacing:0.1em; animation: bootBlink 0.8s steps(1) infinite; }
+@keyframes bootBlink{ 50%{ opacity:0.2; } }
+
+/* ===== Toggle Efek Suara / Musik ===== */
+.theme-toggle .icon-sfx-off{ display:none; }
+[data-sfx="off"] .icon-sfx-on{ display:none; }
+[data-sfx="off"] .icon-sfx-off{ display:block; }
+#bgmToggle.bgm-active{ background: var(--primary); }
+
+/* ===== Efek Ketik (Typewriter) ===== */
+.typewriter-active::after{
+  content: "_"; margin-left: 2px;
+  animation: typeBlink 0.8s steps(1) infinite;
+}
+@keyframes typeBlink{ 50%{ opacity:0; } }
+
+/* ===== Foto Pilihan Hari Ini ===== */
+.featured-photo{ margin-top: 1.75rem; }
+.featured-photo-label{ margin-bottom: 0.5rem; }
+.featured-photo-frame{
+  display:block; border: 3px solid var(--pixel-ink); box-shadow: var(--shadow-card);
+  max-width: 420px; aspect-ratio: 16/9; overflow:hidden;
+}
+.featured-photo-frame img{ width:100%; height:100%; object-fit:cover; }
+
+/* ===== NPC Wali Kelas (bubble chat mengambang) ===== */
+.npc-widget{
+  position: fixed; left: 1rem; bottom: 1rem; z-index: 50;
+  display:flex; align-items:flex-end; gap:0.6rem;
+  max-width: min(320px, calc(100vw - 2rem));
+}
+.npc-avatar{
+  width:46px; height:46px; flex-shrink:0;
+  background: var(--secondary-tint); color: var(--secondary-dark);
+  border: 3px solid var(--pixel-ink); box-shadow: 3px 3px 0 0 var(--pixel-ink);
+  display:flex; align-items:center; justify-content:center;
+}
+.npc-avatar svg{ width:24px; height:24px; }
+.npc-bubble{
+  background: var(--surface); border: 2px solid var(--pixel-ink); box-shadow: var(--shadow-card);
+  padding: 0.6rem 0.8rem; font-family: var(--font-mono); font-size: 0.76rem; line-height:1.5;
+  max-width: 240px; position:relative;
+}
+.npc-close{
+  position:absolute; top:-10px; right:-10px;
+  width:20px; height:20px; background: var(--tertiary-tint); color: var(--tertiary);
+  border: 2px solid var(--pixel-ink); font-size:0.7rem; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.npc-widget.npc-hidden{ display:none; }
+@media (max-width: 640px){
+  .npc-widget{ max-width: calc(100vw - 1.5rem); }
+  .npc-bubble{ max-width: 190px; font-size:0.72rem; }
 }

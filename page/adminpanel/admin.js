@@ -49,7 +49,7 @@ let feedbackList = [];
 
 let editingAnnouncementId = null;
 let editingTaskId = null;
-let selectedGalleryFile = null;
+let selectedGalleryFiles = [];
 let confirmActionCallback = null;
 
 /* ===== THEME (LIGHT/DARK) ===== */
@@ -527,12 +527,13 @@ function confirmDeleteTask(id) {
 
 /* ===== CRUD: GALERI ===== */
 function openGalleryModal() {
-  selectedGalleryFile = null;
+  selectedGalleryFiles = [];
   document.getElementById("photoFileInput").value = "";
   document.getElementById("dropzoneIdle").style.display = "block";
   document.getElementById("dropzonePreviewWrap").style.display = "none";
   document.getElementById("uploadProgressWrap").style.display = "none";
   document.getElementById("galleryUploadBtn").disabled = true;
+  document.getElementById("galleryUploadBtn").textContent = "Unggah Foto";
   document.getElementById("galleryUrlInput").value = "";
   document.getElementById("galleryUrlError").textContent = "";
   switchGalleryTab("upload");
@@ -547,35 +548,71 @@ function switchGalleryTab(tab) {
   document.getElementById("urlTabPanel").style.display = tab === "url" ? "block" : "none";
 }
 
-// Reads the file both for the preview AND to get the base64 payload we'll
-// send to the server (kept together since FileReader gives us both at once).
-function handleFileSelected(file) {
-  if (!file || !file.type.startsWith("image/")) {
-    showToast("File harus berupa gambar.");
-    return;
-  }
-  if (file.size > 1.5 * 1024 * 1024) {
-    showToast("Ukuran gambar maksimal 1.5MB.");
-    return;
-  }
-  selectedGalleryFile = file;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    document.getElementById("dropzonePreview").src = e.target.result;
-    document.getElementById("dropzoneIdle").style.display = "none";
-    document.getElementById("dropzonePreviewWrap").style.display = "block";
-    document.getElementById("galleryUploadBtn").disabled = false;
-  };
-  reader.readAsDataURL(file);
+// Validates and queues one or more files (from file picker OR drag-and-drop),
+// then re-renders the thumbnail grid. Invalid files are skipped with a toast
+// instead of blocking the whole batch.
+function handleFilesSelected(fileList) {
+  const files = Array.from(fileList);
+  files.forEach(file => {
+    if (!file.type.startsWith("image/")) {
+      showToast(`${file.name}: bukan file gambar, dilewati.`);
+      return;
+    }
+    if (file.size > 1.5 * 1024 * 1024) {
+      showToast(`${file.name}: lebih dari 1.5MB, dilewati.`);
+      return;
+    }
+    selectedGalleryFiles.push(file);
+  });
+  renderDropzonePreviews();
 }
 
-// Uploads as base64 JSON (not multipart/form-data) — multer/busboy-style
-// multipart parsing hangs indefinitely on Vercel's serverless functions, so
-// this reuses the same JSON path that already works reliably for
-// announcements/tasks. No real upload-progress events exist for fetch(), so
-// we show an indeterminate "uploading" state instead of a fake percentage.
-function uploadGalleryPhoto() {
-  if (!selectedGalleryFile) return;
+function renderDropzonePreviews() {
+  const grid = document.getElementById("dropzonePreviewGrid");
+  const idle = document.getElementById("dropzoneIdle");
+  const previewWrap = document.getElementById("dropzonePreviewWrap");
+  const uploadBtn = document.getElementById("galleryUploadBtn");
+
+  if (!selectedGalleryFiles.length) {
+    idle.style.display = "block";
+    previewWrap.style.display = "none";
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Unggah Foto";
+    return;
+  }
+
+  idle.style.display = "none";
+  previewWrap.style.display = "block";
+  uploadBtn.disabled = false;
+  uploadBtn.textContent = `Unggah ${selectedGalleryFiles.length} Foto`;
+
+  grid.innerHTML = "";
+  selectedGalleryFiles.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const item = document.createElement("div");
+      item.className = "dropzone-preview-item";
+      item.innerHTML = `<img src="${e.target.result}" alt="Preview"><button type="button" class="dropzone-preview-remove" data-idx="${idx}">&times;</button>`;
+      grid.appendChild(item);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Uploads each queued file as base64 JSON, one at a time (not multipart/form-data
+// — multer/busboy-style multipart parsing hangs indefinitely on Vercel's
+// serverless functions). Failures on one file don't stop the rest of the batch.
+async function uploadGalleryPhotos() {
+  if (!selectedGalleryFiles.length) return;
 
   const uploadBtn = document.getElementById("galleryUploadBtn");
   uploadBtn.disabled = true;
@@ -585,40 +622,40 @@ function uploadGalleryPhoto() {
   progressWrap.style.display = "block";
   progressBar.style.width = "100%";
   progressBar.classList.add("indeterminate");
-  progressLabel.textContent = "Mengunggah foto...";
 
-  const file = selectedGalleryFile;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    // reader.result looks like "data:image/png;base64,AAAA..." — strip the prefix.
-    const dataBase64 = String(reader.result).split(",")[1] || "";
+  let successCount = 0;
+  let failCount = 0;
+
+  for (let i = 0; i < selectedGalleryFiles.length; i++) {
+    const file = selectedGalleryFiles[i];
+    progressLabel.textContent = `Mengunggah foto ${i + 1} dari ${selectedGalleryFiles.length}...`;
     try {
+      const dataBase64 = await readFileAsBase64(file);
       const res = await apiFetch("/gallery/upload", {
         method: "POST",
         body: JSON.stringify({ filename: file.name, contentType: file.type, dataBase64 }),
       });
       const result = await res.json();
-      if (result.success) {
-        showToast("Foto berhasil diunggah!");
-        closeModal("galleryModalBackdrop");
-        loadGallery();
-        loadActivityLog();
-      } else {
-        showToast(result.message || "Gagal mengunggah foto.");
-      }
+      if (result.success) successCount++;
+      else failCount++;
     } catch (err) {
-      // apiFetch already redirects on 401; anything else just needs a toast.
-      showToast("Gagal mengunggah foto (koneksi bermasalah).");
-    } finally {
-      uploadBtn.disabled = false;
-      progressBar.classList.remove("indeterminate");
+      failCount++;
     }
-  };
-  reader.onerror = () => {
-    uploadBtn.disabled = false;
-    showToast("Gagal membaca file foto.");
-  };
-  reader.readAsDataURL(file);
+  }
+
+  progressBar.classList.remove("indeterminate");
+  uploadBtn.disabled = false;
+
+  if (successCount > 0) {
+    showToast(failCount > 0
+      ? `${successCount} foto berhasil, ${failCount} gagal diunggah.`
+      : `${successCount} foto berhasil diunggah!`);
+    closeModal("galleryModalBackdrop");
+    loadGallery();
+    loadActivityLog();
+  } else {
+    showToast("Semua foto gagal diunggah.");
+  }
 }
 
 async function saveGalleryUrl() {
@@ -1015,24 +1052,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoFileInput = document.getElementById("photoFileInput");
   dropzone.addEventListener("click", () => photoFileInput.click());
   photoFileInput.addEventListener("change", (e) => {
-    if (e.target.files[0]) handleFileSelected(e.target.files[0]);
+    if (e.target.files.length) handleFilesSelected(e.target.files);
+    photoFileInput.value = ""; // allow re-selecting the same file(s) later
   });
   dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
   dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
   dropzone.addEventListener("drop", (e) => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
-    if (e.dataTransfer.files[0]) handleFileSelected(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length) handleFilesSelected(e.dataTransfer.files);
   });
-  document.getElementById("removePreviewBtn").addEventListener("click", (e) => {
+  document.getElementById("dropzonePreviewGrid").addEventListener("click", (e) => {
+    const btn = e.target.closest(".dropzone-preview-remove");
+    if (!btn) return;
     e.stopPropagation();
-    selectedGalleryFile = null;
-    photoFileInput.value = "";
-    document.getElementById("dropzoneIdle").style.display = "block";
-    document.getElementById("dropzonePreviewWrap").style.display = "none";
-    document.getElementById("galleryUploadBtn").disabled = true;
+    const idx = parseInt(btn.dataset.idx, 10);
+    selectedGalleryFiles.splice(idx, 1);
+    renderDropzonePreviews();
   });
-  document.getElementById("galleryUploadBtn").addEventListener("click", uploadGalleryPhoto);
+  const addMoreBtn = document.getElementById("addMorePhotosBtn");
+  if (addMoreBtn) addMoreBtn.addEventListener("click", (e) => { e.stopPropagation(); photoFileInput.click(); });
+  document.getElementById("galleryUploadBtn").addEventListener("click", uploadGalleryPhotos);
   document.getElementById("galleryUrlSaveBtn").addEventListener("click", saveGalleryUrl);
 
   // Session warning modal
