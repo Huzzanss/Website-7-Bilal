@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kotak Saran — Kelas VII Bilal bin Rabbah</title>
+<meta name="description" content="Kirim saran atau masukan untuk website dan Kelas VII Bilal bin Rabbah.">
+<link rel="icon" type="image/png" sizes="32x32" href="../../logo-kelas.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css">
+<script>
+  (function(){
+    var saved = localStorage.getItem("theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+  })();
+</script>
+</head>
+<body>
+
+<!-- ===== HEADER / NAV ===== -->
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="../../index.html" class="brand">
+      <span class="brand-badge" id="brandBadge">VII</span>
+      <span class="brand-text">
+        <strong>Bilal bin Rabbah</strong>
+        <small>SMP Islam Bunga Bangsa</small>
+      </span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Buka menu">
+      <span></span><span></span><span></span>
+    </button>
+    <button class="theme-toggle" id="sfxToggle" aria-label="Bisukan/nyalakan efek suara" title="Efek suara">
+      <svg class="icon-sfx-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+      <svg class="icon-sfx-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m17 9 4 6M21 9l-4 6"/></svg>
+    </button>
+    <button class="theme-toggle" id="bgmToggle" aria-label="Nyalakan/matikan musik latar" title="Musik latar (chiptune)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </button>
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema gelap/terang" title="Ganti tema">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>
+    </button>
+    <nav class="main-nav" id="mainNav">
+      <a href="../../index.html" id="navBeranda" data-nav>Beranda</a>
+      <a href="../jadwal/" data-nav>Jadwal</a>
+      <a href="../tugas/" data-nav>Tugas &amp; Ujian</a>
+      <a href="../kalender/" data-nav>Kalender</a>
+      <a href="../siswa/" data-nav>Siswa</a>
+      <a href="../galeri/" data-nav>Galeri</a>
+      <a href="../saran/" data-nav class="active">Saran</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ===== KOTAK SARAN ===== -->
+  <section class="section">
+    <div class="container" style="max-width:640px;">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Kami dengar masukanmu</p>
+          <h2>Kotak Saran</h2>
+        </div>
+      </div>
+      <p class="section-desc">Ada ide, kritik, atau masukan buat website atau kelas ini? Tulis di sini &mdash; nanti dibaca langsung sama admin kelas. Boleh anonim.</p>
+      <form id="feedbackForm">
+        <div class="form-group">
+          <label for="feedbackName">Nama (opsional)</label>
+          <input type="text" id="feedbackName" placeholder="Boleh dikosongkan kalau mau anonim" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="feedbackMessage">Pesan</label>
+          <textarea id="feedbackMessage" placeholder="Tulis saran atau masukanmu di sini..." required maxlength="2000"></textarea>
+          <div class="field-error" id="feedbackMessageError"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="feedbackSubmitBtn">Kirim Masukan</button>
+      </form>
+
+      <div class="section-head" style="margin-top:2.5rem;">
+        <div>
+          <p class="eyebrow">Terbuka untuk semua</p>
+          <h3 style="font-family:var(--font-display); font-size:1.05rem;">Masukan dari Teman-teman</h3>
+        </div>
+      </div>
+      <div class="announcement-list" id="feedbackPublicList"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Website Kelas VII Bilal bin Rabbah — SMP Islam Bunga Bangsa.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== NPC WALI KELAS (bubble chat mengambang) ===== -->
+<div class="npc-widget" id="npcWidget">
+  <button class="npc-close" id="npcClose" aria-label="Tutup">&times;</button>
+  <div class="npc-bubble" id="npcBubble">Memuat pesan...</div>
+  <div class="npc-avatar" id="npcAvatar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+  </div>
+</div>
+
+<script src="../../sound.js"></script>
+<script src="../../app.js"></script>
+</body>
+</html>

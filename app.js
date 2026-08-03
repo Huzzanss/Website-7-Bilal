@@ -1,7 +1,8 @@
-const CLASS_ICON = "logo-kelas.png";
+const CLASS_ICON = "/logo-kelas.png";
 
 function renderBrandBadge(){
   const el = document.getElementById("brandBadge");
+  if (!el) return;
   if (CLASS_ICON && CLASS_ICON.trim()){
     el.innerHTML = `<img src="${CLASS_ICON}" alt="Logo Kelas" onerror="this.parentElement.textContent='VII'">`;
   }
@@ -794,7 +795,7 @@ if (navBeranda){
       e.preventDefault();
       berandaClickCount = 0;
       showToast("🎮 Easter egg ditemukan! Membuka mini game...", 2200);
-      setTimeout(() => { window.location.href = "page/minigame/"; }, 700);
+      setTimeout(() => { window.location.href = "/page/minigame/"; }, 700);
     }
   });
 }
@@ -868,7 +869,7 @@ window.addEventListener("keydown", (e) => {
   secretTimer = setTimeout(() => { secretBuffer = ""; }, 1500);
 
   if (secretBuffer.endsWith("admin")){
-    window.location.href = "page/loginadminpanel/";
+    window.location.href = "/page/loginadminpanel/";
   }
 });
 

@@ -45,7 +45,7 @@
 <!-- ===== HEADER / NAV ===== -->
 <header class="site-header">
   <div class="container header-inner">
-    <a href="#beranda" class="brand">
+    <a href="index.html" class="brand">
       <span class="brand-badge" id="brandBadge">VII</span>
       <span class="brand-text">
         <strong>Bilal bin Rabbah</strong>
@@ -67,21 +67,20 @@
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>
     </button>
     <nav class="main-nav" id="mainNav">
-      <a href="#beranda" id="navBeranda" data-nav>Beranda</a>
-      <a href="#jadwal" data-nav>Jadwal</a>
-      <a href="#tugas" data-nav>Tugas &amp; Ujian</a>
-      <a href="#kalender" data-nav>Kalender</a>
-      <a href="#siswa" data-nav>Siswa</a>
-      <a href="#galeri" data-nav>Galeri</a>
-      <a href="#saran" data-nav>Saran</a>
+      <a href="index.html" id="navBeranda" data-nav class="active">Beranda</a>
+      <a href="page/jadwal/" data-nav>Jadwal</a>
+      <a href="page/tugas/" data-nav>Tugas &amp; Ujian</a>
+      <a href="page/kalender/" data-nav>Kalender</a>
+      <a href="page/siswa/" data-nav>Siswa</a>
+      <a href="page/galeri/" data-nav>Galeri</a>
+      <a href="page/saran/" data-nav>Saran</a>
     </nav>
   </div>
 </header>
 
 <main>
-
   <!-- ===== BERANDA ===== -->
-  <section id="beranda" class="section hero-section">
+  <section id="beranda" class="hero-section">
     <div class="container">
       <div class="hero-text">
         <p class="eyebrow">Ruang informasi terbuka kelas</p>
@@ -89,33 +88,48 @@
         <p class="hero-sub">Pusat informasi kegiatan, jadwal, tugas, dan foto dokumentasi kelas.</p>
       </div>
 
-      <div class="announcement-board" id="announcementBoard">
+      <!-- ===== PAPAN PENGUMUMAN ===== -->
+      <div class="announcement-board">
         <div class="board-head">
-          <h2><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.5 5 10 5 10s5-6.5 5-10a5 5 0 0 0-5-5Z"/><circle cx="12" cy="7" r="1.6"/></svg></span> Papan Pengumuman</h2>
+          <h2>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Papan Pengumuman
+          </h2>
         </div>
         <div class="announcement-list" id="announcementList"></div>
       </div>
 
+      <!-- ===== QUICK LINKS ===== -->
       <div class="quick-links">
-        <a href="#jadwal" class="quick-card">
-          <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>
+        <a href="page/jadwal/" class="quick-card">
+          <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
           <span class="quick-title">Jadwal Pelajaran</span>
-          <span class="quick-desc">Lihat jadwal harian Senin–Jumat</span>
+          <span class="quick-desc">Lihat jadwal harian & piket</span>
         </a>
-        <a href="#tugas" class="quick-card">
+        <a href="page/tugas/" class="quick-card">
           <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.2c0-.7.5-1.2 1.2-1.2H11a1 1 0 0 1 1 1v16"/><path d="M12 4.8h7.8c.7 0 1.2.5 1.2 1.2v13.5"/><path d="M4 19.5c0 1 .8 1.5 1.5 1.5H20"/></svg></span>
           <span class="quick-title">Tugas &amp; Ujian</span>
           <span class="quick-desc">Cek deadline tugas terbaru</span>
         </a>
-        <a href="#siswa" class="quick-card">
-          <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 11.7v4.3c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4.3"/><path d="M21 9.5v5.5"/></svg></span>
-          <span class="quick-title">Daftar Siswa</span>
-          <span class="quick-desc">Daftar siswa &amp; wali kelas</span>
+        <a href="page/kalender/" class="quick-card">
+          <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></span>
+          <span class="quick-title">Kalender</span>
+          <span class="quick-desc">Semua deadline satu tampilan</span>
         </a>
-        <a href="#galeri" class="quick-card">
+        <a href="page/siswa/" class="quick-card">
+          <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 4 2 10l10 6 10-6Z"/><path d="M6 12.5V17c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg></span>
+          <span class="quick-title">Daftar Siswa</span>
+          <span class="quick-desc">Daftar siswa & wali kelas</span>
+        </a>
+        <a href="page/galeri/" class="quick-card">
           <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="m4 18 5-5 3 3 4-4.5 4 4.5"/></svg></span>
           <span class="quick-title">Galeri</span>
           <span class="quick-desc">Dokumentasi kegiatan kelas</span>
+        </a>
+        <a href="page/saran/" class="quick-card">
+          <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="quick-title">Kotak Saran</span>
+          <span class="quick-desc">Kirim masukan buat kelas</span>
         </a>
       </div>
 
@@ -123,170 +137,12 @@
         <div class="featured-photo-label">
           <span class="eyebrow" style="margin-bottom:0;">Foto Pilihan Hari Ini</span>
         </div>
-        <a href="#galeri" class="featured-photo-frame">
+        <a href="page/galeri/" class="featured-photo-frame">
           <img src="" alt="Foto pilihan hari ini">
         </a>
       </div>
     </div>
   </section>
-
-  <!-- ===== JADWAL PELAJARAN ===== -->
-  <section id="jadwal" class="section">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Senin – Jumat</p>
-          <h2>Jadwal Pelajaran</h2>
-        </div>
-        <button class="btn btn-secondary" id="printScheduleBtn">
-          <span class="btn-icon-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Cetak Jadwal &amp; Piket
-          </span>
-        </button>
-      </div>
-      <div class="schedule-tabs" id="scheduleTabs"></div>
-      <div class="schedule-wrap" id="scheduleWrap"></div>
-
-      <div class="section-head" style="margin-top:2rem;">
-        <div>
-          <p class="eyebrow">Kebersihan kelas</p>
-          <h3 style="font-family:var(--font-display); font-size:1.1rem;">Piket Kelas</h3>
-        </div>
-      </div>
-      <div class="schedule-wrap" id="piketKelasWrap"></div>
-
-      <div class="section-head" style="margin-top:2rem;">
-        <div>
-          <p class="eyebrow">Ballroom &middot; sebelum &amp; sesudah sholat</p>
-          <h3 style="font-family:var(--font-display); font-size:1.1rem;">Piket Gulung Sajadah</h3>
-        </div>
-      </div>
-      <div class="schedule-wrap" id="piketWrap"></div>
-    </div>
-  </section>
-
-  <!-- ===== TUGAS & UJIAN ===== -->
-  <section id="tugas" class="section alt-bg">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Deadline &amp; agenda</p>
-          <h2>Daftar Tugas &amp; Ujian</h2>
-        </div>
-      </div>
-
-      <div class="filter-row" id="filterRow">
-        <button class="chip active" data-filter="semua">Semua</button>
-        <button class="chip" data-filter="berjalan">Berjalan</button>
-        <button class="chip" data-filter="selesai">Selesai</button>
-      </div>
-
-      <div class="task-list" id="taskList"></div>
-    </div>
-  </section>
-
-  <!-- ===== KALENDER TUGAS ===== -->
-  <section id="kalender" class="section">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Semua deadline dalam satu tampilan</p>
-          <h2>Kalender Tugas</h2>
-        </div>
-        <div class="calendar-nav">
-          <button class="icon-btn" id="calPrevBtn" aria-label="Bulan sebelumnya">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <span class="calendar-month-label" id="calMonthLabel"></span>
-          <button class="icon-btn" id="calNextBtn" aria-label="Bulan berikutnya">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-      </div>
-      <p class="section-desc">Kotak berwarna menandakan tugas/ujian yang tenggatnya jatuh pada tanggal itu. Jadwal pelajaran harian tetap ada di tab <a href="#jadwal" style="text-decoration:underline;">Jadwal</a>.</p>
-      <div class="calendar-weekdays">
-        <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
-      </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-    </div>
-  </section>
-
-  <!-- ===== DAFTAR SISWA ===== -->
-  <section id="siswa" class="section">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Informasi kelas</p>
-          <h2>Wali Kelas &amp; Struktur Kelas</h2>
-        </div>
-      </div>
-      <div class="teacher-card" id="teacherCard"></div>
-
-      <div class="section-head" style="margin-top:2rem;">
-        <div>
-          <p class="eyebrow">Kepengurusan</p>
-          <h3 style="font-family:var(--font-display); font-size:1.1rem;">Struktur Organisasi Kelas</h3>
-        </div>
-      </div>
-      <div class="structure-grid" id="structureGrid"></div>
-
-      <div class="section-head" style="margin-top:2rem;">
-        <div>
-          <p class="eyebrow">Anggota kelas</p>
-          <h3 style="font-family:var(--font-display); font-size:1.1rem;">Daftar Siswa</h3>
-        </div>
-      </div>
-      <div class="student-list" id="studentList"></div>
-    </div>
-  </section>
-
-  <!-- ===== GALERI ===== -->
-  <section id="galeri" class="section alt-bg">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Dokumentasi kegiatan</p>
-          <h2>Galeri Foto Kelas</h2>
-        </div>
-      </div>
-      <div class="gallery-grid" id="galleryGrid"></div>
-    </div>
-  </section>
-
-  <!-- ===== KOTAK SARAN ===== -->
-  <section id="saran" class="section alt-bg">
-    <div class="container" style="max-width:640px;">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Kami dengar masukanmu</p>
-          <h2>Kotak Saran</h2>
-        </div>
-      </div>
-      <p class="section-desc">Ada ide, kritik, atau masukan buat website atau kelas ini? Tulis di sini &mdash; nanti dibaca langsung sama admin kelas. Boleh anonim.</p>
-      <form id="feedbackForm">
-        <div class="form-group">
-          <label for="feedbackName">Nama (opsional)</label>
-          <input type="text" id="feedbackName" placeholder="Boleh dikosongkan kalau mau anonim" maxlength="100">
-        </div>
-        <div class="form-group">
-          <label for="feedbackMessage">Pesan</label>
-          <textarea id="feedbackMessage" placeholder="Tulis saran atau masukanmu di sini..." required maxlength="2000"></textarea>
-          <div class="field-error" id="feedbackMessageError"></div>
-        </div>
-        <button type="submit" class="btn btn-primary" id="feedbackSubmitBtn">Kirim Masukan</button>
-      </form>
-
-      <div class="section-head" style="margin-top:2.5rem;">
-        <div>
-          <p class="eyebrow">Terbuka untuk semua</p>
-          <h3 style="font-family:var(--font-display); font-size:1.05rem;">Masukan dari Teman-teman</h3>
-        </div>
-      </div>
-      <div class="announcement-list" id="feedbackPublicList"></div>
-    </div>
-  </section>
-
 </main>
 
 <footer class="site-footer">
@@ -305,17 +161,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
   </div>
 </div>
-
-<!-- ===== LIGHTBOX (GALERI TAMPILAN PENUH) ===== -->
-<div class="lightbox-backdrop" id="lightboxBackdrop">
-  <button class="lightbox-close" id="lightboxClose" aria-label="Tutup">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-  </button>
-  <img class="lightbox-img" id="lightboxImg" src="" alt="Foto kegiatan (tampilan penuh)">
-</div>
-
-<!-- ===== AREA CETAK (tersembunyi, cuma tampil pas print/simpan PDF) ===== -->
-<div id="printArea"></div>
 
 <!-- Efek suara & musik chiptune 8-bit (Web Audio API, tanpa file audio) -->
 <script src="sound.js"></script>
