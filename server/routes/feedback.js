@@ -74,7 +74,7 @@ router.get("/", async (req, res) => {
     let isAdmin = false;
     if (token) {
       try {
-        jwt.verify(token, process.env.JWT_SECRET);
+        jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
         isAdmin = true;
       } catch (err) {
         isAdmin = false; // expired/invalid token -> treat request as public

@@ -1,24 +1,5 @@
-/* ===== TEMA GELAP/TERANG (mandiri, sama seperti halaman utama) ===== */
-function applyTheme(theme){
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("theme", theme);
-}
-const themeToggle = document.getElementById("themeToggle");
-if (themeToggle){
-  themeToggle.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    applyTheme(current);
-  });
-}
-
-function showToast(msg, duration = 2200){
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.classList.add("show");
-  clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(() => toast.classList.remove("show"), duration);
-}
+/* Tema, toast, dan efek suara sekarang disediakan bareng oleh app.js & sound.js
+   (dimuat sebelum file ini) — jadi di sini cukup fokus ke logic game-nya saja. */
 
 /* ===== ELEMEN ===== */
 const gameIntro = document.getElementById("gameIntro");
@@ -100,6 +81,10 @@ function catchItem(item){
   if (score < 0) score = 0;
   hudScore.textContent = score;
 
+  if (typeof playSfx === "function") {
+    playSfx(item.type.bad ? "error" : "click");
+  }
+
   const pop = document.createElement("span");
   pop.className = "score-pop";
   pop.textContent = (item.type.value > 0 ? "+" : "") + item.type.value;
@@ -148,6 +133,8 @@ function startGame(){
   gameResult.style.display = "none";
   gameScreen.style.display = "block";
 
+  if (typeof playSfx === "function") playSfx("chime");
+
   spawnTimeoutId = setTimeout(spawnItem, 300);
   rafId = requestAnimationFrame(gameLoop);
   tickIntervalId = setInterval(() => {
@@ -177,7 +164,10 @@ function endGame(){
   gameScreen.style.display = "none";
   gameResult.style.display = "block";
 
-  if (isNewHigh) showToast("🏆 Skor tertinggi baru!");
+  if (isNewHigh) {
+    if (typeof playSfx === "function") playSfx("success");
+    if (typeof showToast === "function") showToast("🏆 Skor tertinggi baru!");
+  }
 }
 
 startBtn.addEventListener("click", startGame);

@@ -4,6 +4,11 @@ const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
+const MAX_SUBJECT_LEN = 100;
+const MAX_TITLE_LEN = 200;
+const MAX_DESC_LEN = 3000;
+const DEADLINE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
 router.get("/", async (req, res) => {
   try {
     const snap = await db.ref("tasks").once("value");
@@ -21,6 +26,12 @@ router.post("/", requireAuth, async (req, res) => {
   const { subject, title, desc, deadline, status } = req.body || {};
   if (!subject || !subject.trim() || !title || !title.trim() || !deadline) {
     return res.status(400).json({ success: false, message: "Mata pelajaran, judul, dan tenggat wajib diisi." });
+  }
+  if (!DEADLINE_PATTERN.test(deadline)) {
+    return res.status(400).json({ success: false, message: "Format tenggat harus YYYY-MM-DD." });
+  }
+  if (subject.length > MAX_SUBJECT_LEN || title.length > MAX_TITLE_LEN || (desc && desc.length > MAX_DESC_LEN)) {
+    return res.status(400).json({ success: false, message: "Salah satu isian terlalu panjang." });
   }
 
   try {
@@ -47,6 +58,12 @@ router.put("/:id", requireAuth, async (req, res) => {
   const { subject, title, desc, deadline, status } = req.body || {};
   if (!subject || !subject.trim() || !title || !title.trim() || !deadline) {
     return res.status(400).json({ success: false, message: "Mata pelajaran, judul, dan tenggat wajib diisi." });
+  }
+  if (!DEADLINE_PATTERN.test(deadline)) {
+    return res.status(400).json({ success: false, message: "Format tenggat harus YYYY-MM-DD." });
+  }
+  if (subject.length > MAX_SUBJECT_LEN || title.length > MAX_TITLE_LEN || (desc && desc.length > MAX_DESC_LEN)) {
+    return res.status(400).json({ success: false, message: "Salah satu isian terlalu panjang." });
   }
 
   try {

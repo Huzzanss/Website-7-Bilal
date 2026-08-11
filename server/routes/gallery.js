@@ -11,6 +11,7 @@ const router = express.Router();
 // shot. Bigger/more photos = slower page loads and more of the free quota
 // used up, so this stays conservative.
 const MAX_FILE_BYTES = 1.5 * 1024 * 1024; // 1.5MB
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 router.get("/", async (req, res) => {
   try {
@@ -34,8 +35,8 @@ router.post("/upload", requireAuth, async (req, res) => {
   if (!dataBase64 || !contentType) {
     return res.status(400).json({ success: false, message: "File tidak ditemukan." });
   }
-  if (!contentType.startsWith("image/")) {
-    return res.status(400).json({ success: false, message: "File harus berupa gambar." });
+  if (!ALLOWED_IMAGE_TYPES.includes(contentType)) {
+    return res.status(400).json({ success: false, message: "Format gambar harus JPG, PNG, WEBP, atau GIF." });
   }
 
   let buffer;
@@ -63,18 +64,22 @@ router.post("/upload", requireAuth, async (req, res) => {
     });
     res.json({ success: true, id: ref.key });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Gagal menyimpan foto: " + err.message });
+    console.error("Gagal menyimpan foto ke gallery:", err);
+    res.status(500).json({ success: false, message: "Gagal menyimpan foto. Coba lagi." });
   }
 });
 
 router.post("/url", requireAuth, async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ success: false, message: "URL wajib diisi." });
+  let parsed;
   try {
-    new URL(url);
+    parsed = new URL(url);
   } catch (err) {
     return res.status(400).json({ success: false, message: "URL tidak valid." });
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return res.status(400).json({ success: false, message: "URL harus dimulai dengan http:// atau https://" });
   }
 
   try {

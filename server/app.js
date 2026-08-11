@@ -20,11 +20,38 @@ const backupRoutes = require("./routes/backup");
 const app = express();
 
 app.set("trust proxy", 1); // accurate req.ip behind Vercel/Render's proxy
-app.use(cors());
+
+// CORS: only allow the site's own domain(s) to call this API from a browser,
+// instead of the wide-open default (any origin). Server-to-server requests
+// (no Origin header at all — curl, health checks, etc.) are still allowed
+// through, since they can't be spoofed by a malicious webpage anyway.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:4000")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origin tidak diizinkan oleh CORS."));
+    }
+  },
+}));
 // Raised from Express's 100kb default so base64-encoded photo uploads fit
 // (see routes/gallery.js — this avoids multer/multipart, which hangs on
 // Vercel's serverless functions).
 app.use(express.json({ limit: "8mb" }));
+
+// Basic security headers (kept manual/lightweight instead of adding the
+// `helmet` dependency, since this is a small API and we only need a few).
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/announcements", announcementRoutes);

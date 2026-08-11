@@ -4,6 +4,9 @@ const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
+const MAX_TITLE_LEN = 200;
+const MAX_BODY_LEN = 3000;
+
 // Public: anyone visiting the site can read announcements.
 router.get("/", async (req, res) => {
   try {
@@ -23,6 +26,9 @@ router.post("/", requireAuth, async (req, res) => {
   const { title, body } = req.body || {};
   if (!title || !title.trim()) {
     return res.status(400).json({ success: false, message: "Judul wajib diisi." });
+  }
+  if (title.length > MAX_TITLE_LEN || (body && body.length > MAX_BODY_LEN)) {
+    return res.status(400).json({ success: false, message: `Judul maks. ${MAX_TITLE_LEN} karakter, isi maks. ${MAX_BODY_LEN} karakter.` });
   }
 
   const dateStr = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -49,6 +55,9 @@ router.put("/:id", requireAuth, async (req, res) => {
   const { title, body } = req.body || {};
   if (!title || !title.trim()) {
     return res.status(400).json({ success: false, message: "Judul wajib diisi." });
+  }
+  if (title.length > MAX_TITLE_LEN || (body && body.length > MAX_BODY_LEN)) {
+    return res.status(400).json({ success: false, message: `Judul maks. ${MAX_TITLE_LEN} karakter, isi maks. ${MAX_BODY_LEN} karakter.` });
   }
 
   try {
