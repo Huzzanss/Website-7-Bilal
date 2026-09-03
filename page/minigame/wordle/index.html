@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle — Kelas VII Bilal</title>
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        body { background: var(--surface); font-family: var(--font-display); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; color: var(--foreground); }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 2rem; }
+        .tile { width: 50px; height: 50px; border: 3px solid var(--pixel-ink); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-transform: uppercase; background: var(--card); transition: background 0.3s; }
+        .tile.correct { background: #6aaa64; color: white; border-color: #6aaa64; }
+        .tile.present { background: #c9b458; color: white; border-color: #c9b458; }
+        .tile.absent { background: #787c7e; color: white; border-color: #787c7e; }
+        .keyboard { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        .keyboard-row { display: flex; gap: 6px; }
+        .key { padding: 10px 12px; background: var(--card); border: 2px solid var(--pixel-ink); cursor: pointer; font-weight: bold; text-transform: uppercase; border-radius: 4px; transition: background 0.2s; }
+        .key:active { transform: scale(0.9); }
+        .key.wide { padding: 10px 20px; }
+        .key.correct { background: #6aaa64; color: white; }
+        .key.present { background: #c9b458; color: white; }
+        .key.absent { background: #787c7e; color: white; }
+        .message { position: fixed; top: 20%; background: var(--pixel-ink); color: white; padding: 1rem; border-radius: 8px; display: none; z-index: 100; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Wordle Indonesia</h2>
+        <p>Tebak kata 5 huruf!</p>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="keyboard" id="keyboard"></div>
+
+    <div class="message" id="message"></div>
+
+    <script>
+        const WORDS = ['BUNGA', 'BINTA', 'KAYUH', 'RUMAH', 'POHON', 'Siswa', 'Buku', 'Kelas', 'Belajar', 'Sekolah']; // Simplified for demo
+        const targetWord = "BUNGA"; // Fixed for demo, usually random
+        let currentGuess = "";
+        let guesses = [];
+        const maxGuesses = 6;
+
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            for (let i = 0; i < maxGuesses * 5; i++) {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                tile.id = 'tile-' + i;
+                grid.appendChild(tile);
+            }
+        }
+
+        function initKeyboard() {
+            const layout = [
+                'QWERTYUIOP',
+                'ASDFGHJKL',
+                'ZXCVBNM'
+            ];
+            const kb = document.getElementById('keyboard');
+            layout.forEach((row, idx) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.classList.add('keyboard-row');
+                
+                if (idx === 2) {
+                    const enter = document.createElement('button');
+                    enter.textContent = 'ENTER';
+                    enter.classList.add('key', 'wide');
+                    enter.onclick = submitGuess;
+                    rowDiv.appendChild(enter);
+                }
+
+                row.split('').forEach(char => {
+                    const key = document.createElement('button');
+                    key.textContent = char;
+                    key.classList.add('key');
+                    key.id = 'key-' + char;
+                    key.onclick = () => addLetter(char);
+                    rowDiv.appendChild(key);
+                });
+
+                if (idx === 2) {
+                    const del = document.createElement('button');
+                    del.textContent = '⌫';
+                    del.classList.add('key', 'wide');
+                    del.onclick = deleteLetter;
+                    rowDiv.appendChild(del);
+                }
+                kb.appendChild(rowDiv);
+            });
+        }
+
+        function addLetter(char) {
+            if (currentGuess.length < 5 && guesses.length < maxGuesses) {
+                currentGuess += char;
+                updateGrid();
+            }
+        }
+
+        function deleteLetter() {
+            currentGuess = currentGuess.slice(0, -1);
+            updateGrid();
+        }
+
+        function updateGrid() {
+            const startIdx = guesses.length * 5;
+            for (let i = 0; i < 5; i++) {
+                const tile = document.getElementById('tile-' + (startIdx + i));
+                tile.textContent = currentGuess[i] || "";
+            }
+        }
+
+        function submitGuess() {
+            if (currentGuess.length !== 5) return;
+            
+            const guess = currentGuess.toUpperCase();
+            guesses.push(guess);
+            
+            const startIdx = guesses.length * 5 - 5;
+            for (let i = 0; i < 5; i++) {
+                const tile = document.getElementById('tile-' + (startIdx + i));
+                const char = guess[i];
+                if (char === targetWord[i]) {
+                    tile.classList.add('correct');
+                    document.getElementById('key-' + char)?.classList.add('correct');
+                } else if (targetWord.includes(char)) {
+                    tile.classList.add('present');
+                    if (!document.getElementById('key-' + char)?.classList.contains('correct')) {
+                        document.getElementById('key-' + char)?.classList.add('present');
+                    }
+                } else {
+                    tile.classList.add('absent');
+                    document.getElementById('key-' + char)?.classList.add('absent');
+                }
+            }
+
+            if (guess === targetWord) {
+                showMessage("LUAR BIASA! Kamu Menang! 🎉");
+            } else if (guesses.length === maxGuesses) {
+                showMessage("Game Over! Katanya adalah: " + targetWord);
+            }
+
+            currentGuess = "";
+            updateGrid();
+        }
+
+        function showMessage(msg) {
+            const m = document.getElementById('message');
+            m.textContent = msg;
+            m.style.display = 'block';
+        }
+
+        initGrid();
+        initKeyboard();
+    </script>
+</body>
+</html>
