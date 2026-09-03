@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Game: Tangkap Bintang — Kelas VII Bilal bin Rabbah</title>
-<meta name="description" content="Main mini game Tangkap Bintang, selingan santai buat murid Kelas VII Bilal bin Rabbah.">
+<title>Mini Game — Kelas VII Bilal bin Rabbah</title>
+<meta name="description" content="Pilih mini game buat main santai, selingan dari website Kelas VII Bilal bin Rabbah.">
 <link rel="icon" type="image/png" sizes="32x32" href="../../logo-kelas.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -17,62 +17,22 @@
   })();
 </script>
 <style>
-  .game-wrap{ padding: 1.5rem 0 3rem; }
-  .game-card{
+  .game-hub-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap:1.25rem;
+    max-width: 720px; margin: 0 auto;
+  }
+  .game-hub-card{
     background: var(--surface); border: 3px solid var(--pixel-ink);
-    box-shadow: var(--shadow-pop); max-width: 520px; width:100%; margin: 0 auto;
-    padding: 1.5rem; text-align:center;
+    box-shadow: var(--shadow-card); padding: 1.5rem 1.25rem; text-align:center;
+    transition: transform .12s ease, box-shadow .12s ease;
   }
-  .game-card h1{ font-size:1.35rem; margin-bottom:0.5rem; text-transform: uppercase; }
-  .game-card p{ color: var(--on-surface-variant); font-size:0.92rem; margin-bottom:0.4rem; }
-  .game-badge{
-    display:inline-flex; align-items:center; gap:0.4rem;
-    background: var(--secondary-tint); color: var(--secondary-dark); border: 2px solid var(--pixel-ink);
-    font-family: var(--font-mono);
-    font-weight:700; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em;
-    padding:0.25rem 0.7rem; margin-bottom:0.9rem;
+  .game-hub-card:hover{ transform: translate(-3px,-3px); box-shadow: 11px 11px 0 0 var(--pixel-shadow); }
+  .game-hub-icon{ font-size: 2.6rem; margin-bottom: 0.6rem; }
+  .game-hub-card h3{ font-size: 1.05rem; margin-bottom: 0.4rem; text-transform: uppercase; }
+  .game-hub-card p{ color: var(--on-surface-variant); font-size: 0.86rem; margin-bottom: 1rem; }
+  @media (max-width: 560px){
+    .game-hub-grid{ grid-template-columns: 1fr; }
   }
-  .game-highscore{
-    font-family: var(--font-display); font-weight:700; font-size:1rem;
-    color: var(--primary); margin: 0.8rem 0 1.2rem;
-  }
-  .legend{ display:flex; justify-content:center; gap:1.1rem; flex-wrap:wrap; margin-bottom:1.3rem; font-size:0.82rem; color:var(--on-surface-variant); }
-  .legend span{ display:flex; align-items:center; gap:0.3rem; }
-  .legend b{ font-size:1.1rem; }
-
-  .hud{
-    display:flex; justify-content:space-between; align-items:center;
-    max-width:520px; width:100%; margin: 0 auto 0.75rem; padding: 0 0.2rem;
-    font-family: var(--font-display); font-weight:700; font-size:0.95rem;
-  }
-  .hud .hud-score{ color: var(--secondary-dark); }
-  .hud .hud-time{ color: var(--deadline-red); }
-
-  #gameArea{
-    position:relative; max-width:520px; width:100%; height: 62vh; max-height:480px;
-    margin: 0 auto; background: linear-gradient(180deg, var(--primary-tint) 0%, var(--surface) 100%);
-    border: 3px solid var(--pixel-ink); overflow:hidden;
-    box-shadow: var(--shadow-card); touch-action: none;
-  }
-  .falling-item{
-    position:absolute; font-size:2rem; line-height:1; cursor:pointer; user-select:none;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
-    transform: translate(-50%, -50%);
-  }
-  .score-pop{
-    position:absolute; font-family: var(--font-display); font-weight:800; font-size:1rem;
-    pointer-events:none; animation: popUp .7s ease forwards;
-  }
-  @keyframes popUp{
-    from{ opacity:1; transform: translate(-50%,-50%); }
-    to{ opacity:0; transform: translate(-50%, -180%); }
-  }
-
-  #gameResult{ display:none; }
-  #gameScreen{ display:none; }
-  .result-score{ font-family: var(--font-display); font-weight:800; font-size:2.4rem; color: var(--primary); margin: 0.5rem 0; }
-  .result-actions{ display:flex; gap:0.6rem; margin-top:1.2rem; flex-wrap:wrap; justify-content:center; }
-  .back-link{ display:inline-block; margin-top:1.2rem; font-size:0.85rem; color: var(--on-surface-variant); text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -109,51 +69,38 @@
       <a href="../siswa/" data-nav>Siswa</a>
       <a href="../galeri/" data-nav>Galeri</a>
       <a href="../saran/" data-nav>Saran</a>
-      <a href="../minigame/" data-nav class="active">🎮 Mini Game</a>
+      <a href="../minigame/" data-nav class="active">Mini Game</a>
     </nav>
   </div>
 </header>
 
-<main class="game-wrap container">
+<main>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Selingan santai</p>
+          <h2>Mini Game</h2>
+        </div>
+      </div>
+      <p class="section-desc">Pilih mau main yang mana. Skor/rekor tersimpan otomatis di perangkat kamu masing-masing.</p>
 
-  <!-- ===== INTRO ===== -->
-  <section id="gameIntro" class="game-card">
-    <span class="game-badge">🎮 Selingan Santai</span>
-    <h1>Tangkap Bintang</h1>
-    <p>Ketuk/klik benda yang jatuh secepat mungkin sebelum waktu habis. Kumpulkan skor sebanyak-banyaknya!</p>
-    <div class="legend">
-      <span><b>⭐</b> +1</span>
-      <span><b>🌙</b> +2</span>
-      <span><b>🕋</b> +5 (langka)</span>
-      <span><b>💣</b> −2 (hindari!)</span>
-    </div>
-    <p class="game-highscore" id="highScoreLabel">Skor tertinggi: 0</p>
-    <button class="btn btn-primary" id="startBtn">Mulai Main</button>
-    <br>
-    <a href="../../index.html" class="back-link">← Kembali ke Beranda</a>
-  </section>
-
-  <!-- ===== GAME ===== -->
-  <section id="gameScreen">
-    <div class="hud">
-      <span class="hud-score">Skor: <span id="hudScore">0</span></span>
-      <span class="hud-time">⏱ <span id="hudTime">30</span>s</span>
-    </div>
-    <div id="gameArea"></div>
-  </section>
-
-  <!-- ===== RESULT ===== -->
-  <section id="gameResult" class="game-card">
-    <p class="eyebrow" style="justify-content:center;">Waktu habis!</p>
-    <h1>Hasil Kamu</h1>
-    <div class="result-score" id="finalScore">0</div>
-    <p id="highScoreNote">Skor tertinggi: 0</p>
-    <div class="result-actions">
-      <button class="btn btn-primary" id="playAgainBtn">Main Lagi</button>
-      <a href="../../index.html" class="btn btn-secondary">Kembali ke Beranda</a>
+      <div class="game-hub-grid">
+        <a href="tangkap-bintang/" class="game-hub-card">
+          <div class="game-hub-icon">⭐</div>
+          <h3>Tangkap Bintang</h3>
+          <p>Refleks cepat — tangkap benda jatuh sebelum waktu habis, hindari bomnya!</p>
+          <span class="btn btn-primary">Main</span>
+        </a>
+        <a href="cocok-kartu/" class="game-hub-card">
+          <div class="game-hub-icon">🃏</div>
+          <h3>Cocokkan Kartu</h3>
+          <p>Uji ingatan — cari semua pasangan kartu dengan langkah sesedikit mungkin.</p>
+          <span class="btn btn-primary">Main</span>
+        </a>
+      </div>
     </div>
   </section>
-
 </main>
 
 <footer class="site-footer">
@@ -175,6 +122,5 @@
 
 <script src="../../sound.js"></script>
 <script src="../../app.js"></script>
-<script src="minigame.js"></script>
 </body>
 </html>
