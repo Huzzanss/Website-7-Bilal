@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Cepat Kelas — Mini Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --primary: #fad02c;
+    --secondary: #4ae183;
+    --on-surface: #edf1f7;
+    --surface: #1b2432;
+    --surface-alt: #212c3d;
+    --on-surface-variant: #a6b2c4;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Manrope', sans-serif;
+    background: #0e141c;
+    color: var(--on-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .quiz-container {
+    max-width: 600px;
+    width: 100%;
+    padding: 1.5rem;
+  }
+  .quiz-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .quiz-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .progress-bar {
+    height: 8px;
+    background: var(--surface-alt);
+    border: 2px solid var(--primary);
+    margin-top: 1rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--secondary);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .quiz-content {
+    background: var(--surface);
+    border: 4px solid var(--primary);
+    padding: 2rem;
+    box-shadow: 8px 8px 0 0 #000000;
+  }
+  .question-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    margin-bottom: 0.5rem;
+  }
+  .question-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .answer-btn {
+    background: var(--surface-alt);
+    color: var(--on-surface);
+    border: 3px solid var(--primary);
+    padding: 1rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+  .answer-btn:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 0 var(--primary);
+  }
+  .answer-btn:active:not(:disabled) {
+    transform: translate(1px, 1px);
+  }
+  .answer-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  .answer-btn.correct {
+    background: var(--secondary);
+    color: #000;
+    border-color: var(--secondary);
+  }
+  .answer-btn.incorrect {
+    background: #ff8a80;
+    color: #fff;
+    border-color: #ff8a80;
+  }
+  .score-display {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: var(--surface-alt);
+    padding: 1rem;
+    border: 2px solid var(--primary);
+  }
+  .score-item {
+    flex: 1;
+    text-align: center;
+  }
+  .score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    margin-bottom: 0.25rem;
+  }
+  .score-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--secondary);
+  }
+  .game-over {
+    text-align: center;
+  }
+  .game-over h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .final-score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 1rem 0;
+  }
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  button {
+    background: var(--primary);
+    color: #1e1c10;
+    border: 3px solid #000;
+    padding: 0.65rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 0 #000;
+    transition: all 0.1s ease;
+  }
+  button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 #000;
+  }
+  button:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 #000;
+  }
+  .back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: var(--secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--secondary);
+  }
+  .back-link:hover {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <div class="quiz-header">
+    <h1 class="quiz-title">❓ Quiz Cepat</h1>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="score-display">
+    <div class="score-item">
+      <div class="score-label">Skor</div>
+      <div class="score-value" id="currentScore">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">Rekor</div>
+      <div class="score-value" id="bestScore">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">Soal</div>
+      <div class="score-value" id="questionCount">1</div>
+    </div>
+  </div>
+
+  <div class="quiz-content">
+    <div id="quizScreen">
+      <div class="question-number" id="questionNumber">Soal 1 dari 5</div>
+      <div class="question-text" id="questionText"></div>
+      <div class="answer-grid" id="answerGrid"></div>
+      <div style="text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--on-surface-variant);">
+        ⏱️ Waktu menjawab: <span id="timeRemaining">30</span>s
+      </div>
+    </div>
+
+    <div id="gameOverScreen" class="game-over hidden">
+      <h2>🎉 Quiz Selesai!</h2>
+      <div class="final-score" id="finalScore">0</div>
+      <p style="color: var(--on-surface-variant); margin-bottom: 0.5rem;">dari 5 soal dijawab dengan benar</p>
+      <p id="resultMessage" style="font-size: 0.95rem; color: var(--secondary); font-weight: 700;"></p>
+      <div class="controls">
+        <button onclick="startQuiz()">Main Lagi</button>
+        <button onclick="goBack()">Kembali</button>
+      </div>
+    </div>
+  </div>
+
+  <a href="../" class="back-link">← Kembali ke Mini Game</a>
+</div>
+
+<script src="../../../sound.js"></script>
+<script>
+const QUESTIONS = [
+  {
+    q: "Siapa Wali Kelas VII Bilal?",
+    a: ["Sugeng Riyadi, S.Kom., Gr.", "Budi Santoso", "Ahmad Sholeh", "Noor Insan"]
+  },
+  {
+    q: "Jam berapa upacara Senin dimulai?",
+    a: ["07.30", "07.15", "08.00", "06.45"]
+  },
+  {
+    q: "Berapa banyak siswa di Kelas VII Bilal?",
+    a: ["18", "20", "16", "22"]
+  },
+  {
+    q: "Siapa Ketua Kelas VII Bilal?",
+    a: ["Muhammad Alfindra Auvar Rahardja", "Muhammad Asyraf Al Farisi", "Ahmad Abdullah Hafi Munaji", "Chaerul Risyad Ferdiansyah"]
+  },
+  {
+    q: "Hari apa Bina Prestasi dijadwalkan?",
+    a: ["Rabu dan Jumat", "Selasa dan Kamis", "Senin dan Rabu", "Jumat saja"]
+  }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let bestScore = localStorage.getItem('quizBest') ? parseInt(localStorage.getItem('quizBest')) : 0;
+let gameRunning = false;
+let timeRemaining = 30;
+let timerInterval = null;
+
+document.getElementById('bestScore').textContent = bestScore;
+
+function startQuiz() {
+  currentQuestion = 0;
+  score = 0;
+  gameRunning = true;
+  document.getElementById('quizScreen').classList.remove('hidden');
+  document.getElementById('gameOverScreen').classList.add('hidden');
+  document.getElementById('currentScore').textContent = '0';
+  showQuestion();
+  if (window.playSfx) playSfx('boot');
+}
+
+function showQuestion() {
+  if (currentQuestion >= QUESTIONS.length) {
+    endQuiz();
+    return;
+  }
+
+  const q = QUESTIONS[currentQuestion];
+  document.getElementById('questionNumber').textContent = `Soal ${currentQuestion + 1} dari ${QUESTIONS.length}`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('questionCount').textContent = currentQuestion + 1;
+  
+  const progress = ((currentQuestion + 1) / QUESTIONS.length) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+
+  const grid = document.getElementById('answerGrid');
+  grid.innerHTML = '';
+  q.a.forEach((answer, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = answer;
+    btn.onclick = () => selectAnswer(idx);
+    btn.disabled = false;
+    grid.appendChild(btn);
+  });
+
+  timeRemaining = 30;
+  clearInterval(timerInterval);
+  updateTimer();
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    updateTimer();
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      skipQuestion();
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  document.getElementById('timeRemaining').textContent = timeRemaining;
+}
+
+function selectAnswer(idx) {
+  const correct = idx === 0;
+  clearInterval(timerInterval);
+
+  const buttons = document.querySelectorAll('.answer-btn');
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === 0) {
+      btn.classList.add('correct');
+    } else if (i === idx && !correct) {
+      btn.classList.add('incorrect');
+    }
+  });
+
+  if (correct) {
+    score++;
+    document.getElementById('currentScore').textContent = score;
+    if (window.playSfx) playSfx('success');
+  } else {
+    if (window.playSfx) playSfx('error');
+  }
+
+  setTimeout(() => {
+    currentQuestion++;
+    showQuestion();
+  }, 1500);
+}
+
+function skipQuestion() {
+  clearInterval(timerInterval);
+  const buttons = document.querySelectorAll('.answer-btn');
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === 0) btn.classList.add('correct');
+  });
+  if (window.playSfx) playSfx('error');
+  
+  setTimeout(() => {
+    currentQuestion++;
+    showQuestion();
+  }, 1500);
+}
+
+function endQuiz() {
+  clearInterval(timerInterval);
+  gameRunning = false;
+  
+  if (score > bestScore) {
+    bestScore = score;
+    localStorage.setItem('quizBest', bestScore);
+    document.getElementById('bestScore').textContent = bestScore;
+  }
+
+  document.getElementById('finalScore').textContent = score;
+  
+  let message = '';
+  if (score === 5) message = '🏆 Sempurna! Kamu memahami kelas dengan baik!';
+  else if (score === 4) message = '🌟 Sangat bagus! Tinggal ada 1 yang terlewat.';
+  else if (score === 3) message = '👍 Bagus! Kamu sudah hafal banyak hal.';
+  else if (score === 2) message = '📚 Coba baca jadwal dan info kelas lagi!';
+  else message = '💪 Terus pelajari tentang kelasmu!';
+  
+  document.getElementById('resultMessage').textContent = message;
+  document.getElementById('quizScreen').classList.add('hidden');
+  document.getElementById('gameOverScreen').classList.remove('hidden');
+  
+  if (score >= 4) {
+    if (window.playSfx) playSfx('chime');
+  }
+}
+
+function goBack() {
+  window.location.href = '../';
+}
+
+// Start on load
+document.addEventListener('DOMContentLoaded', startQuiz);
+</script>
+</body>
+</html>

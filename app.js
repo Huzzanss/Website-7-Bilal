@@ -795,7 +795,7 @@ if (navBeranda){
       e.preventDefault();
       berandaClickCount = 0;
       showToast("🎮 Easter egg ditemukan! Membuka mini game...", 2200);
-      setTimeout(() => { window.location.href = "/page/minigame/"; }, 700);
+      console.log("Mini Game removed");
     }
   });
 }

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Kelas — Mini Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'JetBrains Mono', monospace;
+    background: #0e141c;
+    color: #edf1f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .game-container {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    padding: 1rem;
+  }
+  .game-header {
+    margin-bottom: 1.5rem;
+  }
+  .game-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    color: #fad02c;
+  }
+  canvas {
+    border: 4px solid #fad02c;
+    background: #1b2432;
+    display: block;
+    margin: 1rem auto;
+    image-rendering: pixelated;
+    box-shadow: 8px 8px 0 0 #000000;
+  }
+  .game-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: #212c3d;
+    padding: 1rem;
+    border: 2px solid #fad02c;
+  }
+  .info-item {
+    flex: 1;
+    text-align: center;
+  }
+  .info-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #a6b2c4;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+  .info-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4ae183;
+  }
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  button {
+    background: #fad02c;
+    color: #1e1c10;
+    border: 3px solid #1e1c10;
+    padding: 0.65rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 0 #000000;
+    transition: all 0.1s ease;
+  }
+  button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 #000000;
+  }
+  button:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 #000000;
+  }
+  .status {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    color: #a6b2c4;
+    min-height: 1.2em;
+  }
+  .leaderboard {
+    margin-top: 2rem;
+    background: #212c3d;
+    border: 2px solid #fad02c;
+    padding: 1.25rem;
+    text-align: left;
+  }
+  .leaderboard h3 {
+    font-size: 0.95rem;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    color: #fad02c;
+  }
+  .leaderboard-list {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: #a6b2c4;
+  }
+  .back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: #4ae183;
+    text-decoration: none;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #4ae183;
+  }
+  .back-link:hover {
+    color: #fad02c;
+    border-bottom-color: #fad02c;
+  }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <div class="game-header">
+    <h1 class="game-title">🐦 Flappy Kelas</h1>
+  </div>
+
+  <div class="game-info">
+    <div class="info-item">
+      <div class="info-label">Skor</div>
+      <div class="info-value" id="scoreDisplay">0</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Rekor</div>
+      <div class="info-value" id="bestDisplay">0</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Status</div>
+      <div style="font-size: 1.2rem; margin-top: 0.2rem;">
+        <span id="statusIcon">🟢</span>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="gameCanvas" width="320" height="480"></canvas>
+
+  <div class="status" id="statusText">Klik/Tekan SPACE atau TAP untuk mulai! ↑</div>
+
+  <div class="controls">
+    <button onclick="startGame()">Mulai Game</button>
+    <button onclick="goBack()">Kembali</button>
+  </div>
+
+  <div class="leaderboard" id="leaderboardDiv" style="display: none;">
+    <h3>Top 5 Skor</h3>
+    <div class="leaderboard-list" id="leaderboardList"></div>
+  </div>
+
+  <a href="../" class="back-link">← Kembali ke Mini Game</a>
+</div>
+
+<script src="../../../sound.js"></script>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Konstanta game
+const GRAVITY = 0.5;
+const JUMP_STRENGTH = -10;
+const PIPE_SPEED = 4;
+const PIPE_GAP = 100;
+const PIPE_WIDTH = 60;
+const BIRD_SIZE = 16;
+
+// Warna (sesuai dark mode)
+const COLORS = {
+  bird: '#fad02c',
+  bg: '#1b2432',
+  pipe: '#4ae183',
+  text: '#edf1f7',
+  grid: '#212c3d'
+};
+
+// State game
+let bird = {
+  x: 60,
+  y: canvas.height / 2,
+  velocityY: 0,
+  width: BIRD_SIZE,
+  height: BIRD_SIZE
+};
+
+let pipes = [];
+let score = 0;
+let bestScore = localStorage.getItem('flappyBest') ? parseInt(localStorage.getItem('flappyBest')) : 0;
+let gameRunning = false;
+let gameOver = false;
+let frameCount = 0;
+
+// Update best score display
+document.getElementById('bestDisplay').textContent = bestScore;
+
+// Input handling
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (!gameRunning && !gameOver) startGame();
+    else if (gameRunning) jump();
+    else if (gameOver) resetGame();
+  }
+});
+
+canvas.addEventListener('click', () => {
+  if (!gameRunning && !gameOver) startGame();
+  else if (gameRunning) jump();
+  else if (gameOver) resetGame();
+});
+
+function startGame() {
+  gameRunning = true;
+  gameOver = false;
+  score = 0;
+  bird.y = canvas.height / 2;
+  bird.velocityY = 0;
+  pipes = [];
+  frameCount = 0;
+  document.getElementById('statusIcon').textContent = '🟡';
+  document.getElementById('statusText').textContent = 'Game dimulai! Hindari pipa!';
+  if (window.playSfx) playSfx('boot');
+  gameLoop();
+}
+
+function jump() {
+  bird.velocityY = JUMP_STRENGTH;
+  if (window.playSfx) playSfx('click');
+}
+
+function resetGame() {
+  gameRunning = false;
+  gameOver = false;
+  bird.velocityY = 0;
+  document.getElementById('statusIcon').textContent = '🔴';
+  document.getElementById('statusText').textContent = `Game Over! Skor: ${score}. Klik untuk main lagi!`;
+  updateLeaderboard();
+  if (window.playSfx) playSfx('error');
+}
+
+function gameLoop() {
+  // Gambar background
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid pattern
+  ctx.strokeStyle = COLORS.grid;
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= canvas.width; i += 20) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i, canvas.height);
+    ctx.stroke();
+  }
+  for (let i = 0; i <= canvas.height; i += 20) {
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(canvas.width, i);
+    ctx.stroke();
+  }
+
+  if (gameRunning) {
+    // Update bird
+    bird.velocityY += GRAVITY;
+    bird.y += bird.velocityY;
+
+    // Spawn pipes
+    frameCount++;
+    if (frameCount % 90 === 0) {
+      const gapStart = Math.random() * (canvas.height - PIPE_GAP - 60) + 30;
+      pipes.push({
+        x: canvas.width,
+        gapStart: gapStart,
+        gapEnd: gapStart + PIPE_GAP,
+        scored: false
+      });
+    }
+
+    // Update & draw pipes
+    pipes = pipes.filter(pipe => {
+      pipe.x -= PIPE_SPEED;
+      
+      // Draw pipes
+      ctx.fillStyle = COLORS.pipe;
+      // Top pipe
+      ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.gapStart);
+      // Bottom pipe
+      ctx.fillRect(pipe.x, pipe.gapEnd, PIPE_WIDTH, canvas.height - pipe.gapEnd);
+      
+      // Pipe borders
+      ctx.strokeStyle = COLORS.pipe;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(pipe.x, 0, PIPE_WIDTH, pipe.gapStart);
+      ctx.strokeRect(pipe.x, pipe.gapEnd, PIPE_WIDTH, canvas.height - pipe.gapEnd);
+
+      // Scoring
+      if (!pipe.scored && pipe.x + PIPE_WIDTH < bird.x) {
+        pipe.scored = true;
+        score++;
+        document.getElementById('scoreDisplay').textContent = score;
+        if (window.playSfx) playSfx('success');
+      }
+
+      return pipe.x > -PIPE_WIDTH;
+    });
+
+    // Collision detection
+    let collision = false;
+
+    // Ground/Ceiling
+    if (bird.y + bird.height > canvas.height || bird.y < 0) {
+      collision = true;
+    }
+
+    // Pipes
+    pipes.forEach(pipe => {
+      if (
+        bird.x + bird.width > pipe.x &&
+        bird.x < pipe.x + PIPE_WIDTH &&
+        (bird.y < pipe.gapStart || bird.y + bird.height > pipe.gapEnd)
+      ) {
+        collision = true;
+      }
+    });
+
+    if (collision) {
+      gameRunning = false;
+      gameOver = true;
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('flappyBest', bestScore);
+        document.getElementById('bestDisplay').textContent = bestScore;
+        if (window.playSfx) playSfx('chime');
+        document.getElementById('statusText').textContent = `🎉 REKOR BARU! ${score} poin! Klik untuk main lagi!`;
+      } else {
+        if (window.playSfx) playSfx('error');
+        document.getElementById('statusText').textContent = `Game Over! Skor: ${score}. Klik untuk main lagi!`;
+      }
+      document.getElementById('statusIcon').textContent = '❌';
+      updateLeaderboard();
+      return;
+    }
+  }
+
+  // Draw bird
+  ctx.fillStyle = COLORS.bird;
+  ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+  ctx.strokeStyle = '#1e1c10';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(bird.x, bird.y, bird.width, bird.height);
+  
+  // Bird eyes
+  ctx.fillStyle = '#1e1c10';
+  ctx.fillRect(bird.x + 4, bird.y + 4, 3, 3);
+  ctx.fillRect(bird.x + 10, bird.y + 4, 3, 3);
+
+  // Draw score
+  ctx.fillStyle = COLORS.text;
+  ctx.font = 'bold 16px JetBrains Mono';
+  ctx.fillText(`SKOR: ${score}`, 10, 25);
+
+  if (gameRunning) {
+    requestAnimationFrame(gameLoop);
+  }
+}
+
+function updateLeaderboard() {
+  const scores = JSON.parse(localStorage.getItem('flappyScores') || '[]');
+  scores.push(score);
+  scores.sort((a, b) => b - a);
+  scores.splice(5);
+  localStorage.setItem('flappyScores', JSON.stringify(scores));
+
+  const list = document.getElementById('leaderboardList');
+  list.innerHTML = scores.map((s, i) => `${i + 1}. ${s} poin`).join('<br>');
+  
+  document.getElementById('leaderboardDiv').style.display = 'block';
+}
+
+function goBack() {
+  window.location.href = '../';
+}
+
+// Gambar initial
+ctx.fillStyle = COLORS.bg;
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = COLORS.text;
+ctx.font = 'bold 14px JetBrains Mono';
+ctx.textAlign = 'center';
+ctx.fillText('Klik untuk mulai!', canvas.width / 2, canvas.height / 2);
+</script>
+</body>
+</html>
