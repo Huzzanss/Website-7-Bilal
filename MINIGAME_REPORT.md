@@ -32,8 +32,10 @@ page/minigame/
 ├── index.html              # Hub/menu mini game
 ├── flappy/
 │   └── index.html         # Game Flappy Kelas
-└── quiz/
-    └── index.html         # Game Quiz Cepat Kelas
+├── quiz/
+│   └── index.html         # Game Quiz Cepat Kelas
+└── memory/
+    └── index.html         # Game Memory Match Kelas
 ```
 
 ### **Game 1: 🐦 Flappy Kelas**
@@ -83,6 +85,29 @@ page/minigame/
 - **CLICK** jawaban yang benar
 - Timer otomatis skip jika tidak menjawab
 - Mainkan lagi untuk improve skor
+
+---
+
+### **Game 3: 🧠 Memory Match Kelas**
+**Path**: `/page/minigame/memory/`
+
+#### Fitur:
+- Board 4x4 (8 pasang kartu emoji bertema alat sekolah)
+- Animasi flip 3D dengan CSS `transform: rotateY`
+- Penghitung langkah (moves) dan timer otomatis
+- Efek shake + SFX error saat kartu tidak cocok
+- Rekor langkah tersedikit disimpan di localStorage
+- Tombol "Main Lagi" untuk acak ulang board
+- Dark, pixel-retro style konsisten dengan game lain
+
+#### Controls:
+- **CLICK** kartu untuk membuka
+- Cocokkan 2 kartu dengan emoji sama
+- Selesaikan dengan langkah sesedikit mungkin
+
+#### Scoring:
+- Dihitung dari jumlah langkah (moves), makin sedikit makin baik
+- Rekor tersimpan per device
 
 ---
 
@@ -161,9 +186,10 @@ Data disimpan lokal (tidak di server), jadi leaderboard per device.
 ## 📝 File Checklist
 
 - ✅ `index.html` - Fixed (Mini Game card href)
-- ✅ `page/minigame/index.html` - Created (Hub page)
+- ✅ `page/minigame/index.html` - Created (Hub page) — diperbarui dengan kartu Memory Match
 - ✅ `page/minigame/flappy/index.html` - Created (Game 1)
 - ✅ `page/minigame/quiz/index.html` - Created (Game 2)
+- ✅ `page/minigame/memory/index.html` - Created (Game 3)
 
 ---
 

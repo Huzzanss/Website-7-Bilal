@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Match Kelas — Mini Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    background: #0e141c;
+    color: #edf1f7;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .game-container {
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
+  }
+  .game-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 0 0 0.4rem 0;
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    color: #fad02c;
+  }
+  .game-sub { color: #a6b2c4; font-size: 0.85rem; margin-bottom: 1.2rem; }
+  .game-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+    background: #212c3d;
+    padding: 0.85rem;
+    border: 2px solid #fad02c;
+  }
+  .info-item { flex: 1; text-align: center; }
+  .info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #a6b2c4;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+  }
+  .info-value { font-size: 1.3rem; font-weight: 700; color: #4ae183; }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    margin: 0 auto 1.2rem;
+  }
+  .card {
+    aspect-ratio: 1 / 1;
+    position: relative;
+    cursor: pointer;
+    perspective: 600px;
+  }
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.28s ease;
+  }
+  .card.flipped .card-inner,
+  .card.matched .card-inner { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    border: 3px solid #fad02c;
+    font-size: 1.8rem;
+  }
+  .card-back {
+    background: #1b2432;
+    color: #fad02c;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .card-front {
+    background: #212c3d;
+    transform: rotateY(180deg);
+  }
+  .card.matched .card-face { border-color: #4ae183; opacity: 0.55; }
+  .card.wrong .card-inner { animation: shake 0.35s ease; }
+  @keyframes shake {
+    0%, 100% { transform: rotateY(180deg) translateX(0); }
+    25% { transform: rotateY(180deg) translateX(-6px); }
+    75% { transform: rotateY(180deg) translateX(6px); }
+  }
+  .controls { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  button {
+    background: #fad02c;
+    color: #1e1c10;
+    border: 3px solid #000;
+    padding: 0.7rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 0 #000;
+    transition: all 0.1s ease;
+  }
+  button:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 #000; }
+  button:active { transform: translate(2px, 2px); box-shadow: 0 0 0 0 #000; }
+  button.secondary { background: #212c3d; color: #edf1f7; border-color: #fad02c; }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #a6b2c4;
+    text-decoration: none;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
+  .back-link:hover { color: #fad02c; }
+  .win-banner {
+    display: none;
+    background: #212c3d;
+    border: 3px solid #4ae183;
+    padding: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .win-banner.show { display: block; }
+  .win-banner h3 { margin: 0 0 0.3rem; color: #4ae183; font-family: 'Space Grotesk', sans-serif; }
+  .win-banner p { margin: 0; color: #a6b2c4; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <a href="../" class="back-link">← Kembali ke Mini Game</a>
+  <h1 class="game-title">🧠 Memory Match</h1>
+  <p class="game-sub">Cocokkan pasangan alat sekolah secepat mungkin!</p>
+
+  <div class="game-info">
+    <div class="info-item">
+      <div class="info-label">Langkah</div>
+      <div class="info-value" id="moves">0</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Waktu</div>
+      <div class="info-value" id="timer">00:00</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Terbaik</div>
+      <div class="info-value" id="best">--</div>
+    </div>
+  </div>
+
+  <div class="win-banner" id="winBanner">
+    <h3 id="winTitle">🎉 Selesai!</h3>
+    <p id="winDesc"></p>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="controls">
+    <button id="restartBtn">Main Lagi</button>
+    <button class="secondary" onclick="window.location.href='../'">Keluar</button>
+  </div>
+</div>
+
+<script src="../../../sound.js"></script>
+<script>
+  const EMOJIS = ["📚", "✏️", "🎒", "📐", "🖍️", "🧮", "📏", "🔬"];
+  const boardEl = document.getElementById("board");
+  const movesEl = document.getElementById("moves");
+  const timerEl = document.getElementById("timer");
+  const bestEl = document.getElementById("best");
+  const winBanner = document.getElementById("winBanner");
+  const winTitle = document.getElementById("winTitle");
+  const winDesc = document.getElementById("winDesc");
+
+  let cards = [];
+  let flipped = [];
+  let matchedCount = 0;
+  let moves = 0;
+  let seconds = 0;
+  let timerInterval = null;
+  let locked = false;
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60).toString().padStart(2, "0");
+    const sec = (s % 60).toString().padStart(2, "0");
+    return `${m}:${sec}`;
+  }
+
+  function loadBest() {
+    const best = localStorage.getItem("memoryBestMoves");
+    bestEl.textContent = best ? best : "--";
+  }
+
+  function startTimer() {
+    stopTimer();
+    seconds = 0;
+    timerEl.textContent = formatTime(seconds);
+    timerInterval = setInterval(() => {
+      seconds++;
+      timerEl.textContent = formatTime(seconds);
+    }, 1000);
+  }
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildBoard() {
+    boardEl.innerHTML = "";
+    cards = shuffle([...EMOJIS, ...EMOJIS]);
+    flipped = [];
+    matchedCount = 0;
+    moves = 0;
+    locked = false;
+    movesEl.textContent = "0";
+    winBanner.classList.remove("show");
+
+    cards.forEach((emoji, i) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.dataset.index = i;
+      card.dataset.emoji = emoji;
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-face card-back">?</div>
+          <div class="card-face card-front">${emoji}</div>
+        </div>
+      `;
+      card.addEventListener("click", () => onCardClick(card));
+      boardEl.appendChild(card);
+    });
+
+    startTimer();
+  }
+
+  function onCardClick(card) {
+    if (locked) return;
+    if (card.classList.contains("flipped") || card.classList.contains("matched")) return;
+    if (flipped.length === 2) return;
+
+    if (window.playSfx) playSfx("click");
+    card.classList.add("flipped");
+    flipped.push(card);
+
+    if (flipped.length === 2) {
+      moves++;
+      movesEl.textContent = moves;
+      const [a, b] = flipped;
+      if (a.dataset.emoji === b.dataset.emoji) {
+        a.classList.add("matched");
+        b.classList.add("matched");
+        flipped = [];
+        matchedCount++;
+        if (window.playSfx) playSfx("success");
+        if (matchedCount === EMOJIS.length) finishGame();
+      } else {
+        locked = true;
+        if (window.playSfx) playSfx("error");
+        a.classList.add("wrong");
+        b.classList.add("wrong");
+        setTimeout(() => {
+          a.classList.remove("flipped", "wrong");
+          b.classList.remove("flipped", "wrong");
+          flipped = [];
+          locked = false;
+        }, 650);
+      }
+    }
+  }
+
+  function finishGame() {
+    stopTimer();
+    if (window.playSfx) playSfx("chime");
+
+    const prevBest = parseInt(localStorage.getItem("memoryBestMoves") || "0", 10);
+    const isNewBest = !prevBest || moves < prevBest;
+    if (isNewBest) localStorage.setItem("memoryBestMoves", moves);
+    loadBest();
+
+    winTitle.textContent = isNewBest ? "🏆 Rekor Baru!" : "🎉 Selesai!";
+    winDesc.textContent = `${moves} langkah dalam ${formatTime(seconds)}${isNewBest ? " — rekor baru kamu!" : ""}`;
+    winBanner.classList.add("show");
+  }
+
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    if (window.playSfx) playSfx("click");
+    buildBoard();
+  });
+
+  loadBest();
+  buildBoard();
+</script>
+</body>
+</html>
